@@ -25,7 +25,7 @@ group_t group = {
     /* First member's full name */
     "Zachary Hynes",
     /* First member's email address */
-    "",
+    "zamhynes2-c@my.cityu.edu.hk",
     /* Second member's full name (leave blank if none) */
     "Jasper Spierling",
     /* Second member's email address (leave blank if none) */
