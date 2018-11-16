@@ -24,6 +24,8 @@ typedef struct {
     char *email2;      	/* Email of second member */
     char *name3;    	/* Full name of third member (if any) */
     char *email3;      	/* Email of third member */
+    char *name4;    	/* Full name of third member (if any) */
+    char *email4;      	/* Email of third member */
 } group_t;
 
 extern group_t group;

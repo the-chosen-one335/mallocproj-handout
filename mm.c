@@ -23,7 +23,7 @@ group_t group = {
     /* Project group number (You're required to join a group on Canvas) */
     "79",
     /* First member's full name */
-    "",
+    "Zachary Hynes",
     /* First member's email address */
     "",
     /* Second member's full name (leave blank if none) */

@@ -13,7 +13,11 @@
   <component name="ChangeListManager">
     <list default="true" id="be350a92-6d8b-45ea-9326-ab22805cc39a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/mm.c" beforeDir="false" afterPath="$PROJECT_DIR$/mm.c" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -55,6 +59,7 @@
         </counts>
       </usages-collector>
     </session>
+<<<<<<< Updated upstream
     <session id="-1898151934">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
@@ -74,6 +79,15 @@
           <entry key="PLAIN_TEXT" value="11" />
         </counts>
       </usages-collector>
+=======
+    <session id="-1358528145">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+>>>>>>> Stashed changes
     </session>
   </component>
   <component name="FileEditorManager">
@@ -86,8 +100,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mm.c">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< Updated upstream
             <state relative-caret-position="327">
               <caret line="32" column="25" selection-start-line="32" selection-start-column="25" selection-end-line="32" selection-end-column="25" />
+=======
+            <state relative-caret-position="52">
+              <caret line="11" selection-start-line="11" selection-end-line="11" />
+>>>>>>> Stashed changes
             </state>
           </provider>
         </entry>
@@ -111,8 +130,14 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
+<<<<<<< Updated upstream
     <option name="width" value="1280" />
     <option name="height" value="800" />
+=======
+    <option name="y" value="22" />
+    <option name="width" value="1280" />
+    <option name="height" value="774" />
+>>>>>>> Stashed changes
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -138,6 +163,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -179,6 +205,7 @@
       <updated>1542337037663</updated>
       <workItem from="1542337040253" duration="98000" />
       <workItem from="1542337169615" duration="1700000" />
+<<<<<<< Updated upstream
       <workItem from="1542340292960" duration="927000" />
     </task>
     <task id="LOCAL-00001" summary="a test">
@@ -187,16 +214,26 @@
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
       <updated>1542340379954</updated>
+=======
+      <workItem from="1542341145127" duration="125000" />
+>>>>>>> Stashed changes
     </task>
     <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
+<<<<<<< Updated upstream
     <option name="totallyTimeSpent" value="2725000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="6" />
     <editor active="true" />
+=======
+    <option name="totallyTimeSpent" value="1923000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="22" width="1280" height="774" extended-state="6" />
+>>>>>>> Stashed changes
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25121164" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -212,7 +249,11 @@
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" show_stripe_button="false" />
+<<<<<<< Updated upstream
       <window_info active="true" anchor="bottom" id="CMake" order="11" visible="true" weight="0.28630137" />
+=======
+      <window_info active="true" anchor="bottom" id="CMake" order="11" visible="true" weight="0.28739002" />
+>>>>>>> Stashed changes
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -226,8 +267,14 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+<<<<<<< Updated upstream
     <MESSAGE value="a test" />
     <option name="LAST_COMMIT_MESSAGE" value="a test" />
+=======
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/CityU_OS_CProject" />
+    </ignored-roots>
+>>>>>>> Stashed changes
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/mm.h">
@@ -241,8 +288,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mm.c">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< Updated upstream
         <state relative-caret-position="327">
           <caret line="32" column="25" selection-start-line="32" selection-start-column="25" selection-end-line="32" selection-end-column="25" />
+=======
+        <state relative-caret-position="52">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
+>>>>>>> Stashed changes
         </state>
       </provider>
     </entry>
