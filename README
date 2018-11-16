@@ -1,0 +1,53 @@
+#####################################################################
+# CS3103 Project: Dynamic Memory Allocation
+# Handout files for students
+#
+# Copyright (c) 2002, R. Bryant and D. O'Hallaron, All rights reserved.
+# May not be used, modified, or copied without permission.
+#
+######################################################################
+
+***********
+Main Files:
+***********
+
+mm.{c,h}
+	Your solution malloc package. mm.c is the file that you
+	will be handing in, and is the only file you should modify.
+
+mdriver.c
+	The malloc driver that tests your mm.c file.
+
+traces/
+	This directory contains traces to evaluate your malloc packages.
+	short{1,2}-bal.rep are two tiny traces that you can use for debugging.
+
+traces/plot/
+	This directory contains plots of allocated memory over time for traces.
+
+Makefile
+	Builds the driver
+
+**********************************
+Other support files for the driver
+**********************************
+
+config.h	Configures the malloc project driver
+fsecs.{c,h}	Wrapper function for the timer function based on gettimeofday()
+memlib.{c,h}	Models the heap and sbrk function
+
+*******************************
+Building and running the driver
+*******************************
+To build the driver, type "make" to the shell.
+
+To run the driver on a tiny test trace:
+
+	$ ./mdriver -V -f traces/short1-bal.rep
+
+The -V option prints out helpful tracing and summary information.
+
+To get a list of the driver flags:
+
+	$ ./mdriver -h
+
