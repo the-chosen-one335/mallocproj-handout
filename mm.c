@@ -9,9 +9,7 @@
  */
 #include <stdio.h>
 #include <string.h>
-
 #include <stdlib.h>
-
 #include "mm.h"
 #include "memlib.h"
 
@@ -30,6 +28,10 @@ group_t group = {
     "Jasper Spierling",
     /* Second member's email address (leave blank if none) */
     "jspierlin2-c@my.cityu.edu.hk",
+    /* Third member's full name (leave blank if none) */
+    "Christian Wanzek",
+    /* Third member's email address (leave blank if none) */
+    "ckwanzek2-c@my.cityu.edu.hk"
     /* Fourth member's full name (leave blank if none) */
     "",
     /* Fourth member's email address (leave blank if none) */
