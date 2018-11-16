@@ -21,18 +21,18 @@
  ********************************************************/
 group_t group = {
     /* Project group number (You're required to join a group on Canvas) */
-    "1",
+    "79",
     /* First member's full name */
-    "John Smith",
+    "",
     /* First member's email address */
-    "john.smith@my.cityu.edu.hk",
+    "",
     /* Second member's full name (leave blank if none) */
-    "test jasper",
+    "Jasper Spierling",
     /* Second member's email address (leave blank if none) */
+    "jspierlin2-c@my.cityu.edu.hk",
+    /* Fourth member's full name (leave blank if none) */
     "",
-    /* Third member's full name (leave blank if none) */
-    "",
-    /* Third member's email address (leave blank if none) */
+    /* Fourth member's email address (leave blank if none) */
     ""
 };
 
