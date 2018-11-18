@@ -43,17 +43,17 @@ group_t group = {
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 
-#define MAX(x, y) ((x) > (y)? (x) : (y))
+#define MAX(x, y) ((x) > (y)? (x) : (y)) // If x > y THEN x, IF NOT, then y.
 
 /* Pack a size and allocated bit into a word */
-#define PACK(size, alloc)  ((size) | (alloc))
+#define PACK(size, alloc)  ((size) | (alloc)) // | is the bitwise OR
 
 /* Read and write a word at address p */
 #define GET(p)       (*(unsigned int *)(p))
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
 
 /* Read the size and allocated fields from address p */
-#define GET_SIZE(p)  (GET(p) & ~0x7)
+#define GET_SIZE(p)  (GET(p) & ~0x7) // ~ is the bitwise COMPLIMENT (Negation)
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
