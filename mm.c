@@ -91,8 +91,10 @@ int mm_init(void)
     //-------------PACK-------------
     //==============================
     //HYNES: DSIZE = 8, therefore 100 in binary ---
+    //Jasper: 8 in binary is 1000
     //HYNES: 1 = 1 in binary
     //HYNES: PACK(100, 1) = 1001 in binary
+    //Jasper: PACK(1000, 1) = 1000 | 0001 => 1001
 
 
     //==============================
