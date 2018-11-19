@@ -39,9 +39,9 @@ group_t group = {
 };
 
 /* Basic constants and macros */
-#define WSIZE       4       /*HYNES: Word and header/footer size (bytes) */
-#define DSIZE       8       /*HYNES: Doubleword size (bytes) */
-#define CHUNKSIZE  (1<<12)  /*HYNES: Extend heap by this amount (bytes) */
+#define WSIZE       4       /* Word and header/footer size (bytes) */
+#define DSIZE       8       /* Doubleword size (bytes) */
+#define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 
 #define MAX(x, y) ((x) > (y)? (x) : (y)) //HYNES: If x > y THEN x, IF NOT, then y.
 
@@ -94,8 +94,12 @@ int mm_init(void)
     //Jasper: 8 in binary is 1000
     //HYNES: 1 = 1 in binary
     //HYNES: PACK(100, 1) = 1001 in binary
+<<<<<<< Updated upstream
     //Jasper: PACK(1000, 1) = 1000 | 0001 => 1001
 
+=======
+    //
+>>>>>>> Stashed changes
 
     //==============================
     //-------------PUT-------------
