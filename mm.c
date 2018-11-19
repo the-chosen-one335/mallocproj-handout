@@ -86,12 +86,13 @@ int mm_init(void)
     /* Create the initial empty heap */
     //heap_listp is the pointer to the first block of the heap
     //mem_sbrk is the last block of memory in the current heap
-    if ((heap_listp = mem_sbrk(4*WSIZE)) == (void *)-1)
-	    return -1;
-    PUT(heap_listp, 0);                          /* Alignment padding */
+
     //DSIZE = 8, therefore 100 in binary ---
     //1 = 1 in binary
     //PACK(100, 1) = 1001 in binary
+    if ((heap_listp = mem_sbrk(4*WSIZE)) == (void *)-1)
+	    return -1;
+    PUT(heap_listp, 0);                          /* Alignment padding */
     PUT(heap_listp + (1*WSIZE), PACK(DSIZE, 1)); /* Prologue header */ // 1001
     PUT(heap_listp + (2*WSIZE), PACK(DSIZE, 1)); /* Prologue footer */ // 1001
     PUT(heap_listp + (3*WSIZE), PACK(0, 1));     /* Epilogue header */ // 0001
