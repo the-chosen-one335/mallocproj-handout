@@ -38,7 +38,7 @@ group_t group = {
     ""
 };
 
-/* Basic constants and macros */
+/* Basic constants and macros   */
 #define WSIZE       4       /*HYNES: Word and header/footer size (bytes) */
 #define DSIZE       8       /*HYNES: Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /*HYNES: Extend heap by this amount (bytes) */
