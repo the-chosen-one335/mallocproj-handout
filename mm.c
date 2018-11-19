@@ -57,6 +57,8 @@ group_t group = {
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
+/* Jasper: char pointer bc a char size is one byte, so adding one to the pointer moves it to next byte in memory,
+ * whereas adding one to an int pointer would move it 4 bytes on since an int's size is 4 byte*/
 #define HDRP(bp)       ((char *)(bp) - WSIZE)
 #define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
 
