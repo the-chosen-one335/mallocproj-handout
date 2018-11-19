@@ -39,21 +39,21 @@ group_t group = {
 };
 
 /* Basic constants and macros */
-#define WSIZE       4       /* Word and header/footer size (bytes) */
-#define DSIZE       8       /* Doubleword size (bytes) */
-#define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
+#define WSIZE       4       /*HYNES: Word and header/footer size (bytes) */
+#define DSIZE       8       /*HYNES: Doubleword size (bytes) */
+#define CHUNKSIZE  (1<<12)  /*HYNES: Extend heap by this amount (bytes) */
 
-#define MAX(x, y) ((x) > (y)? (x) : (y)) // If x > y THEN x, IF NOT, then y.
+#define MAX(x, y) ((x) > (y)? (x) : (y)) //HYNES: If x > y THEN x, IF NOT, then y.
 
 /* Pack a size and allocated bit into a word */
-#define PACK(size, alloc)  ((size) | (alloc)) // | is the bitwise OR
+#define PACK(size, alloc)  ((size) | (alloc)) //HYNES: | is the bitwise OR
 
 /* Read and write a word at address p */
 #define GET(p)       (*(unsigned int *)(p))
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
 
 /* Read the size and allocated fields from address p */
-#define GET_SIZE(p)  (GET(p) & ~0x7) // ~ is the bitwise COMPLIMENT (Negation)
+#define GET_SIZE(p)  (GET(p) & ~0x7) //HYNES: ~ is the bitwise COMPLIMENT (Negation)
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
@@ -84,19 +84,29 @@ static void checkblock(void *bp);
 int mm_init(void)
 {
     /* Create the initial empty heap */
-    //heap_listp is the pointer to the first block of the heap
-    //mem_sbrk is the last block of memory in the current heap
+    //HYNES: heap_listp is the pointer to the first block of the heap
+    //HYNES: mem_sbrk is the last block of memory in the current heap
 
-    //DSIZE = 8, therefore 100 in binary ---
-    //1 = 1 in binary
-    //PACK(100, 1) = 1001 in binary
+    //==============================
+    //-------------PACK-------------
+    //==============================
+    //HYNES: DSIZE = 8, therefore 100 in binary ---
+    //HYNES: 1 = 1 in binary
+    //HYNES: PACK(100, 1) = 1001 in binary
+
+
+    //==============================
+    //-------------PUT-------------
+    //==============================
+
+
     if ((heap_listp = mem_sbrk(4*WSIZE)) == (void *)-1)
 	    return -1;
-    PUT(heap_listp, 0);                          /* Alignment padding */
-    PUT(heap_listp + (1*WSIZE), PACK(DSIZE, 1)); /* Prologue header */ // 1001
-    PUT(heap_listp + (2*WSIZE), PACK(DSIZE, 1)); /* Prologue footer */ // 1001
-    PUT(heap_listp + (3*WSIZE), PACK(0, 1));     /* Epilogue header */ // 0001
-    heap_listp += (2*WSIZE); // create a buffer zone of 8 bytes???
+    PUT(heap_listp, 0);                          /* Alignment padding */    //HYNES: 0   ???
+    PUT(heap_listp + (1*WSIZE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
+    PUT(heap_listp + (2*WSIZE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
+    PUT(heap_listp + (3*WSIZE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
+    heap_listp += (2*WSIZE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
