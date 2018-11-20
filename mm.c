@@ -42,6 +42,9 @@ group_t group = {
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
+/*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
+ * which is usually 4096 bytes/4K on most filesystems. */
+
 
 #define MAX(x, y) ((x) > (y)? (x) : (y)) //HYNES: If x > y THEN x, IF NOT, then y.
 
@@ -49,11 +52,29 @@ group_t group = {
 #define PACK(size, alloc)  ((size) | (alloc)) //HYNES: | is the bitwise OR
 
 /* Read and write a word at address p */
+/* HYNES: GET(p) first casts p into a unsigned integer pointer
+ * (which means the value of p is an address that points to an unsigned int - 4 bytes)
+ * and then it uses the * Dereferencing Operator to go to the address stored in p and access it. */
 #define GET(p)       (*(unsigned int *)(p))
+
+
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
 
 /* Read the size and allocated fields from address p */
-#define GET_SIZE(p)  (GET(p) & ~0x7) //HYNES: ~ is the bitwise COMPLIMENT (Negation)
+/* HYNES: ~ is the bitwise COMPLIMENT (Negation)
+ * WHATEVER IS AT P:                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (32 bits)
+ *                                & 11111111111111111111111111111000 (32 bits)
+                                ----------------------------------------------
+                                    XXXXXXXXXXXXXXXXXXXXXXXXXXXXX000 (32 bits)
+ */
+#define GET_SIZE(p)  (GET(p) & ~0x7)
+
+/* HYNES:
+ * WHATEVER IS AT P:                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (32 bits)
+ *                                & 00000000000000000000000000000001 (32 bits)
+                                ----------------------------------------------
+                                    0000000000000000000000000000000X (32 bits)
+ */
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
@@ -90,16 +111,10 @@ int mm_init(void)
     //==============================
     //-------------PACK-------------
     //==============================
-    //HYNES: DSIZE = 8, therefore 100 in binary ---
-    //Jasper: 8 in binary is 1000
-    //HYNES: 1 = 1 in binary
-    //HYNES: PACK(100, 1) = 1001 in binary
-<<<<<<< Updated upstream
+    //Jasper: DSIZE = 8, 8 in binary is 1000
     //Jasper: PACK(1000, 1) = 1000 | 0001 => 1001
 
-=======
-    //
->>>>>>> Stashed changes
+
 
     //==============================
     //-------------PUT-------------
@@ -115,9 +130,36 @@ int mm_init(void)
     heap_listp += (2*WSIZE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
-    if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
-	return -1;
-    return 0;
+    if (extend_heap(CHUNKSIZE/WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+	    return -1;
+    return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
+
+
+    //HYNES: An interesting visual I quote from "https://www.cs.cmu.edu/~fp/courses/15213-s05/code/18-malloc/malloc.c" for better understanding
+        /*
+         * Simple allocator based on implicit free lists with boundary
+         * tag coalescing. Each block has header and footer of the form:
+         *
+         *      31                     3  2  1  0
+         *      -----------------------------------
+         *     | s  s  s  s  ... s  s  s  0  0  a/f
+         *      -----------------------------------
+         *
+         * where s are the meaningful size bits and a/f is set
+         * iff the block is allocated. The list has the following form:
+         *
+         * begin                                                                    end
+         * heap         | 4 bytes  | 4 bytes  |                       |  4 bytes |  heap
+         *      -----------------------------------------------------------------
+         *     |        | prologue | prologue |        0 or more      | epilogue |
+         *     |  pad   | hdr(8:a) | ftr(8:a) |       user blocks     | hdr(8:a) |
+         *      -----------------------------------------------------------------
+         *     |        |       prologue      |  The blocks we store  | epilogue |
+         *     |        |         block       |        go here?       | block    |
+         *
+         * The allocated prologue and epilogue blocks are overhead that
+         * eliminate edge conditions during coalescing.
+         */
 }
 
 /*
@@ -127,20 +169,21 @@ void *mm_malloc(size_t size)
 {
     size_t asize;      /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
-    char *bp;
+    char *bp; //HYNES: Block Pointer
 
     if (heap_listp == 0){
-	mm_init();
+	    mm_init();
     }
     /* Ignore spurious requests */
     if (size == 0)
 	return NULL;
 
     /* Adjust block size to include overhead and alignment reqs. */
-    if (size <= DSIZE)
-	asize = 2*DSIZE;
+    if (size <= DSIZE) //HYNES: size <= 8 bytes
+	    asize = 2*DSIZE; //HYNES: asize = 16 bytes
     else
-	asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE);
+	    asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE); // HYNES: asize > 8 bytes
+	                                                            // HYNES: asize = 8 bytes * [(size + 15) / 8] ???
 
     /* Search the free list for a fit */
     if ((bp = find_fit(asize)) != NULL) {
