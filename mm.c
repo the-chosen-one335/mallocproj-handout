@@ -132,7 +132,10 @@ int mm_init(void)
     heap_listp += (2*WSIZE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
-    if (extend_heap(CHUNKSIZE/WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+
+
+    free_list_head = (char *) extend_heap(CHUNKSIZE/WSIZE);
+    if (free_list_head == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
 	    return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
 
@@ -204,6 +207,7 @@ void *mm_malloc(size_t size)
 	    return NULL;
     place(bp, asize);
 
+    //TODO Once we have the new memory, it gets placed as the head of the free list & is given a pointer to the old free list header
     return bp;
 }
 
@@ -225,6 +229,9 @@ void mm_free(void *bp)
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     coalesce(bp);
+
+    //TODO Once we have the newly freed memory, it gets placed as the head of the free list & is given a pointer to the old free list header
+
 }
 
 /*
@@ -260,6 +267,8 @@ static void *coalesce(void *bp)
 	PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
 	bp = PREV_BLKP(bp);
     }
+
+    //TODO Once we have the new coalesced block, it gets placed as the head of the free list & is given a pointer to the old free list header
     return bp;
 }
 
@@ -277,7 +286,7 @@ void mm_checkheap(int verbose)
 /*
  * extend_heap - Extend heap with free block and return its block pointer
  */
-static void *extend_heap(size_t words)
+static void* extend_heap(size_t words)
 {
     char *bp;
     size_t size;
@@ -291,6 +300,7 @@ static void *extend_heap(size_t words)
     PUT(HDRP(bp), PACK(size, 0));         /* Free block header */
     PUT(FTRP(bp), PACK(size, 0));         /* Free block footer */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
+
 
     /* Coalesce if the previous block was free */
     return coalesce(bp);
@@ -315,6 +325,8 @@ static void place(void *bp, size_t asize)
 	PUT(HDRP(bp), PACK(csize, 1));
 	PUT(FTRP(bp), PACK(csize, 1));
     }
+
+    //TODO Make sure the leftover free block gets placed as the head of the free list & is given a pointer to the old free list header
 }
 
 /*
@@ -331,6 +343,8 @@ static void *find_fit(size_t asize)
 	}
     }
     return NULL; /* No fit */
+
+    //TODO Write a new find_fit_explicit function that works with our free list
 }
 
 static void printblock(void *bp)
