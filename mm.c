@@ -61,7 +61,7 @@ group_t group = {
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
-#define PUT_POINTER(p, ptr) (*(unsigned long *)p = (ptr))
+#define PUT_POINTER(p, ptr) (*(unsigned long *)p = (unsigned long)(ptr))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
