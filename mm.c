@@ -146,7 +146,7 @@ int mm_init(void)
          *      -----------------------------------
          *
          * where s are the meaningful size bits and a/f is set
-         * iff the block is allocated. The list has the following form:
+         * iff the block is allocated. The heap has the following form:
          *
          * begin                                                                    end
          * heap         | 4 bytes  | 4 bytes  |                       |  4 bytes |  heap
@@ -155,7 +155,7 @@ int mm_init(void)
          *     |  pad   | hdr(8:a) | ftr(8:a) |       user blocks     | hdr(8:a) |
          *      -----------------------------------------------------------------
          *     |        |       prologue      |  The blocks we store  | epilogue |
-         *     |        |         block       |        go here?       | block    |
+         *     |        |         block       |        go here        | block    |
          *
          * The allocated prologue and epilogue blocks are overhead that
          * eliminate edge conditions during coalescing.
@@ -167,11 +167,16 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
+
+    printf("Allocating block of size: %i bytes\n", size);
+    checkheap(1);
+
     size_t asize;      /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
     char *bp; //HYNES: Block Pointer
 
     if (heap_listp == 0){
+        printf("Initializing the Heap...");
 	    mm_init();
     }
     /* Ignore spurious requests */
@@ -182,20 +187,21 @@ void *mm_malloc(size_t size)
     if (size <= DSIZE) //HYNES: size <= 8 bytes
 	    asize = 2*DSIZE; //HYNES: asize = 16 bytes
     else
-	    asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE); // HYNES: asize > 8 bytes
-	                                                            // HYNES: asize = 8 bytes * [(size + 15) / 8] ???
+	    asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
 
     /* Search the free list for a fit */
     if ((bp = find_fit(asize)) != NULL) {
-	place(bp, asize);
-	return bp;
+	    place(bp, asize);
+
+	    return bp;
     }
 
     /* No fit found. Get more memory and place the block */
     extendsize = MAX(asize,CHUNKSIZE);
     if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
-	return NULL;
+	    return NULL;
     place(bp, asize);
+
     return bp;
 }
 
@@ -204,12 +210,14 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *bp)
 {
+    printf("Freeing block: ");
+    printblock(bp);
     if(bp == 0)
-	return;
+	    return;
 
     size_t size = GET_SIZE(HDRP(bp));
     if (heap_listp == 0){
-	mm_init();
+	    mm_init();
     }
 
     PUT(HDRP(bp), PACK(size, 0));
@@ -346,9 +354,9 @@ static void printblock(void *bp)
 static void checkblock(void *bp)
 {
     if ((size_t)bp % 8)
-	printf("Error: %p is not doubleword aligned\n", bp);
+	    printf("Error: %p is not doubleword aligned\n", bp);
     if (GET(HDRP(bp)) != GET(FTRP(bp)))
-	printf("Error: header does not match footer\n");
+	    printf("Error: header does not match footer\n");
 }
 
 /*
@@ -375,5 +383,43 @@ void checkheap(int verbose)
 	printblock(bp);
     if ((GET_SIZE(HDRP(bp)) != 0) || !(GET_ALLOC(HDRP(bp))))
 	printf("Bad epilogue header\n");
-}
 
+//    //Check Heap Size
+//    printf("\nThis is the heap size: %zu", (size_t)mem_heapsize());
+//    printf("bytes.\n");
+
+
+//    //Check value of the first byte of the heap
+//    printf("FIRST Byte of the Heap:\n");
+//    printf("This is the address of the first byte of the heap: %p\n", mem_heap_lo());
+//    printf("This is the value of the first byte of the heap: %d", *((int*)mem_heap_lo())); //Typecast the mem_heap_lo into an integer pointer (int*), then add 1 int* to that memory address and dereference it
+//    printf(" - (Expected: 0)\n\n");
+////    printf("This is the first byte of the heap: %d\n", *(int*)(mem_heap_lo()+4)); //Get the memory byte address of mem_heap_lo and add 4 bytes to it, then type cast it to integer pointer (int*) and dereference it.
+//
+//
+//    //Check value of the last byte of the heap
+//    printf("LAST Byte of the Heap:\n");
+//    printf("This is the address of the last byte of the heap: %p\n", mem_heap_hi());
+//    printf("This is the value of the last byte of the heap: %d", *((int*)(mem_heap_hi()-3))); //Typecast the mem_heap_lo into an integer pointer (int*), then add 1 int* to that memory address and dereference it
+//    printf(" - (Expected: 1)\n\n");
+
+    //TODO Check if all free list pointers point between mem_heap_lo() and mem_heap_high()
+
+    //Check each blocks header and footer:
+        //Size -- Already implicitely implemented in static void checkblock(void *bp)
+        //Essentially, if the checkBlock function returns a proper header and footer, then the size stored in the header is the correct size.
+            //Get footer address
+            //Get header address
+            //HeaderAddress - FooterAddress = Size
+            //Verify with size written in header & footer
+
+
+        //Alignment -- Already implemented in static void checkblock(void *bp)
+        //Previous
+        //Next
+        //Allocate Bit Consistency
+        //Matching Header and Footer -- Already implemented in static void checkblock(void *bp)
+
+
+
+}
