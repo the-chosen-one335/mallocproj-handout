@@ -42,6 +42,8 @@ group_t group = {
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
+#define POINTERSIZE       sizeof(void *)
+
 /*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
 
@@ -59,6 +61,7 @@ group_t group = {
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
+#define PUT_POINTER(p, ptr) (*(unsigned long *)p = (ptr))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
@@ -89,6 +92,7 @@ group_t group = {
 
 /* Global variables */
 static char *heap_listp = 0;  /* Pointer to first block */
+static char *free_list_head = 0; /* pointer to the beginning of explicit free list */
 
 /* Function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -113,8 +117,6 @@ int mm_init(void)
     //==============================
     //Jasper: DSIZE = 8, 8 in binary is 1000
     //Jasper: PACK(1000, 1) = 1000 | 0001 => 1001
-
-
 
     //==============================
     //-------------PUT-------------
@@ -419,7 +421,5 @@ void checkheap(int verbose)
         //Next
         //Allocate Bit Consistency
         //Matching Header and Footer -- Already implemented in static void checkblock(void *bp)
-
-
 
 }
