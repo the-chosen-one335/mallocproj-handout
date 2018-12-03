@@ -92,6 +92,6 @@ footer overhead.
 
 * {random,random2}-bal.rep
 
-Random allocate and free requesets that simply test the correctness
+Random allocate and free requests that simply test the correctness
 and robustness of the algorithm.
 
