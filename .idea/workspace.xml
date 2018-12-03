@@ -12,7 +12,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="be350a92-6d8b-45ea-9326-ab22805cc39a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mm.c" beforeDir="false" afterPath="$PROJECT_DIR$/mm.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -60,7 +59,7 @@
         <counts>
           <entry key="Makefile" value="2" />
           <entry key="README" value="1" />
-          <entry key="c" value="5" />
+          <entry key="c" value="6" />
           <entry key="cbp" value="1" />
           <entry key="cmake" value="3" />
           <entry key="gitattributes" value="1" />
@@ -72,24 +71,25 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CMakeLists.txt" value="6" />
-          <entry key="ObjectiveC" value="9" />
+          <entry key="ObjectiveC" value="10" />
           <entry key="PLAIN_TEXT" value="6" />
           <entry key="XML" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="c" value="1048" />
+          <entry key="c" value="2179" />
           <entry key="cmake" value="6" />
           <entry key="h" value="32" />
-          <entry key="txt" value="251" />
+          <entry key="m" value="14" />
+          <entry key="txt" value="367" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CMakeLists.txt" value="11" />
-          <entry key="ObjectiveC" value="1080" />
-          <entry key="PLAIN_TEXT" value="246" />
+          <entry key="ObjectiveC" value="2225" />
+          <entry key="PLAIN_TEXT" value="362" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.lifecycle.project">
@@ -111,29 +111,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/mdriver.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="2" selection-start-line="5" selection-start-column="2" selection-end-line="5" selection-end-column="2" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mm.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="353">
-              <caret line="233" lean-forward="true" selection-start-line="233" selection-end-line="233" />
+            <state relative-caret-position="413">
+              <caret line="363" selection-start-line="363" selection-end-line="363" />
               <folding>
                 <element signature="e#0#403#0" />
+                <element signature="e#404#422#0" expanded="true" />
                 <element signature="e#500#733#0" />
                 <element signature="e#1734#1876#0" />
                 <element signature="e#2128#2377#0" />
                 <element signature="e#2606#2974#0" />
                 <element signature="e#3013#3342#0" />
                 <element signature="e#3447#3659#0" />
-                <element signature="e#4057#6885#0" />
                 <element signature="e#6082#7426#0" />
                 <element signature="e#11562#11980#0" />
                 <element signature="e#11982#12194#0" />
@@ -146,8 +137,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/memlib.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="653">
-              <caret line="59" column="28" selection-start-line="59" selection-start-column="28" selection-end-line="59" selection-end-column="28" />
+            <state relative-caret-position="314">
+              <caret line="67" column="27" lean-forward="true" selection-start-line="67" selection-start-column="27" selection-end-line="67" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -157,16 +148,25 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>tracedir</find>
-      <find>put</find>
       <find>TRACEDIR</find>
       <find>mem_sbrk</find>
       <find>mem_brk</find>
       <find>checkheap</find>
-      <find>head</find>
-      <find>extend</find>
       <find>extend_heap</find>
       <find>pack</find>
       <find>char *</find>
+      <find>coalesce</find>
+      <find>EXTEND_</find>
+      <find>place</find>
+      <find>free_</find>
+      <find>youre</find>
+      <find>put</find>
+      <find>extend</find>
+      <find>head</find>
+      <find>free(</find>
+      <find>malloc</find>
+      <find>free</find>
+      <find>find</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -194,8 +194,8 @@
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" fullScreen="true">
     <option name="y" value="23" />
-    <option name="width" value="1247" />
-    <option name="height" value="777" />
+    <option name="width" value="1243" />
+    <option name="height" value="761" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -399,7 +399,7 @@
       <workItem from="1543742277374" duration="50000" />
       <workItem from="1543744393637" duration="1370000" />
       <workItem from="1543751485276" duration="6633000" />
-      <workItem from="1543767590368" duration="1780000" />
+      <workItem from="1543767590368" duration="17752000" />
     </task>
     <task id="LOCAL-00001" summary="only added cmake version in order for error message to disappear">
       <created>1542539186216</created>
@@ -464,11 +464,25 @@
       <option name="project" value="LOCAL" />
       <updated>1543769078265</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="just did tiny bit more formatting, added some TODOs">
+      <created>1543769561753</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1543769561753</updated>
+    </task>
+    <task id="LOCAL-00011" summary="removed one \n">
+      <created>1543833863327</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1543833863327</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="34456000" />
+    <option name="totallyTimeSpent" value="50428000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -481,24 +495,23 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49571183" visible="true" weight="0.15993538" />
-      <window_info id="Structure" order="1" sideWeight="0.50428814" side_tool="true" visible="true" weight="0.15993538" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49506903" visible="true" weight="0.15993538" />
+      <window_info id="Structure" order="1" sideWeight="0.504931" side_tool="true" weight="0.15993538" />
       <window_info id="Favorites" order="2" sideWeight="0.50093806" side_tool="true" weight="0.16720517" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49757674" visible="true" weight="0.20136987" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.17638266" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49596122" weight="0.20136987" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.30547947" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32876712" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49919224" weight="0.20547946" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5024233" side_tool="true" weight="0.2589041" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50080776" side_tool="true" weight="0.32876712" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.4983845" weight="0.25205478" />
       <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4983845" weight="0.28630137" />
-      <window_info anchor="bottom" id="Messages" order="12" sideWeight="0.4983845" weight="0.32739726" />
+      <window_info active="true" anchor="bottom" id="Messages" order="12" sideWeight="0.49757674" visible="true" weight="0.12191781" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -566,18 +579,32 @@
     <MESSAGE value="Explicit: defines and macros" />
     <MESSAGE value="Explicit:  edited macro PUT_POINTER" />
     <MESSAGE value="just did some formatting" />
-    <option name="LAST_COMMIT_MESSAGE" value="just did some formatting" />
+    <MESSAGE value="just did tiny bit more formatting, added some TODOs" />
+    <MESSAGE value="add_to_free_list implemented, added call in locations" />
+    <MESSAGE value="removed one \n" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed one \n" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mdriver.c</url>
-          <line>500</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="CMakeRunConfiguration">
+        <watch expression="free_list_head" language="ObjectiveC" />
+        <watch expression="GET_NEXT(free_list_head)" language="ObjectiveC" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="watch">
+      <expression>
+        <expression-string>free_list_head</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>GET_NEXT(free_list_head)</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
@@ -653,33 +680,33 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/memlib.c">
+    <entry file="file://$PROJECT_DIR$/mdriver.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="653">
-          <caret line="59" column="28" selection-start-line="59" selection-start-column="28" selection-end-line="59" selection-end-column="28" />
+        <state relative-caret-position="146">
+          <caret line="501" selection-start-line="501" selection-end-line="501" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mdriver.c">
+    <entry file="file://$PROJECT_DIR$/memlib.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="2" selection-start-line="5" selection-start-column="2" selection-end-line="5" selection-end-column="2" />
+        <state relative-caret-position="314">
+          <caret line="67" column="27" lean-forward="true" selection-start-line="67" selection-start-column="27" selection-end-line="67" selection-end-column="27" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mm.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="353">
-          <caret line="233" lean-forward="true" selection-start-line="233" selection-end-line="233" />
+        <state relative-caret-position="413">
+          <caret line="363" selection-start-line="363" selection-end-line="363" />
           <folding>
             <element signature="e#0#403#0" />
+            <element signature="e#404#422#0" expanded="true" />
             <element signature="e#500#733#0" />
             <element signature="e#1734#1876#0" />
             <element signature="e#2128#2377#0" />
             <element signature="e#2606#2974#0" />
             <element signature="e#3013#3342#0" />
             <element signature="e#3447#3659#0" />
-            <element signature="e#4057#6885#0" />
             <element signature="e#6082#7426#0" />
             <element signature="e#11562#11980#0" />
             <element signature="e#11982#12194#0" />

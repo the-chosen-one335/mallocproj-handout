@@ -43,6 +43,7 @@ group_t group = {
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
+#define MIN_SIZE    (2*DSIZE)
 
 /*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
@@ -150,30 +151,30 @@ int mm_init(void) {
 
 
     //HYNES: An interesting visual I quote from "https://www.cs.cmu.edu/~fp/courses/15213-s05/code/18-malloc/malloc.c" for better understanding
-        /*
-         * Simple allocator based on implicit free lists with boundary
-         * tag coalescing. Each block has header and footer of the form:
-         *
-         *      31                     3  2  1  0
-         *      -----------------------------------
-         *     | s  s  s  s  ... s  s  s  0  0  a/f
-         *      -----------------------------------
-         *
-         * where s are the meaningful size bits and a/f is set
-         * iff the block is allocated. The heap has the following form:
-         *
-         * begin                                                                    end
-         * heap         | 4 bytes  | 4 bytes  |                       |  4 bytes |  heap
-         *      -----------------------------------------------------------------
-         *     |        | prologue | prologue |        0 or more      | epilogue |
-         *     |  pad   | hdr(8:a) | ftr(8:a) |       user blocks     | hdr(8:a) |
-         *      -----------------------------------------------------------------
-         *     |        |       prologue      |  The blocks we store  | epilogue |
-         *     |        |         block       |        go here        | block    |
-         *
-         * The allocated prologue and epilogue blocks are overhead that
-         * eliminate edge conditions during coalescing.
-         */
+    /*
+     * Simple allocator based on implicit free lists with boundary
+     * tag coalescing. Each block has header and footer of the form:
+     *
+     *      31                     3  2  1  0
+     *      -----------------------------------
+     *     | s  s  s  s  ... s  s  s  0  0  a/f
+     *      -----------------------------------
+     *
+     * where s are the meaningful size bits and a/f is set
+     * iff the block is allocated. The heap has the following form:
+     *
+     * begin                                                                    end
+     * heap         | 4 bytes  | 4 bytes  |                       |  4 bytes |  heap
+     *      -----------------------------------------------------------------
+     *     |        | prologue | prologue |        0 or more      | epilogue |
+     *     |  pad   | hdr(8:a) | ftr(8:a) |       user blocks     | hdr(8:a) |
+     *      -----------------------------------------------------------------
+     *     |        |       prologue      |  The blocks we store  | epilogue |
+     *     |        |         block       |        go here        | block    |
+     *
+     * The allocated prologue and epilogue blocks are overhead that
+     * eliminate edge conditions during coalescing.
+     */
 }
 
 
@@ -239,6 +240,8 @@ void mm_free(void *bp) {
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     coalesce(bp);
+
+
 }
 
 
@@ -358,8 +361,14 @@ static void *find_fit(size_t asize) {
     }
     return NULL; /* No fit */
 
-    //TODO Write a new find_fit_explicit function that works with our free list
 }
+
+static void *find_fit_explicit(size_t asize){
+    void *bp;
+
+}
+
+//TODO Write a new find_fit_explicit function that works with our free list
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
