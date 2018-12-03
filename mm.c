@@ -38,6 +38,7 @@ group_t group = {
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
+#define MIN_SIZE    (2*DSIZE)
 
 /*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
@@ -54,8 +55,13 @@ group_t group = {
  * and then it uses the * Dereferencing Operator to go to the address stored in p and access it. */
 #define GET(p)       (*(unsigned int *)(p))
 
+// get_next, get_previous added for free block expicit list pointers
+#define GET_NEXT(bp) (*(unsigned long *)(bp))
+#define GET_PREVIOUS(bp) (*(((unsigned long *)(bp))+1))
+
+
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
-#define PUT_POINTER(p, ptr) (*(unsigned long *)p = (unsigned long)(ptr))
+#define PUT_POINTER(p, ptr) (*(unsigned long *)p =((unsigned long)(ptr)))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
@@ -86,7 +92,7 @@ group_t group = {
 
 /* Global variables */
 static char *heap_listp = 0;  /* Pointer to first block */
-static char *free_list_head = 0; /* pointer to the beginning of explicit free list */
+static unsigned long **free_list_head = NULL; /* pointer to the beginning of explicit free list */
 
 /* Function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -133,8 +139,8 @@ int mm_init(void) {
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
 
 
-    free_list_head = (char *) extend_heap(CHUNKSIZE / WSIZE);
-    if (free_list_head == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+
+    if (extend_heap(CHUNKSIZE / WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
 
@@ -188,7 +194,7 @@ void *mm_malloc(size_t size) {
 
     /* Adjust block size to include overhead and alignment reqs. */
     if (size <= DSIZE) //HYNES: size <= 8 bytes
-        asize = 2 * DSIZE; //HYNES: asize = 16 bytes
+        asize = MIN_SIZE; //HYNES: asize = 16 bytes
     else
         asize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) /
                          DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
@@ -230,12 +236,22 @@ void mm_free(void *bp) {
     PUT(FTRP(bp), PACK(size, 0));
     coalesce(bp);
 
-    //TODO Once we have the newly freed memory, it gets placed as the head of the free list & is given a pointer to the old free list header // Jasper: already done implicitly by coalesce()?
 
 }
 
 
 // coalesce - Boundary tag coalescing. Return ptr to coalesced block
+
+static void add_to_free_list(unsigned long **free_block_pointer) {
+    //set next pointer of new free block to current head of free list;
+    if (free_list_head != NULL)
+        PUT_POINTER(free_block_pointer, free_list_head);
+    else
+        *free_block_pointer = NULL;
+
+    //set head of free list to new free block;
+    free_list_head = free_block_pointer;
+}
 
 static void *coalesce(void *bp) {
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
@@ -243,7 +259,7 @@ static void *coalesce(void *bp) {
     size_t size = GET_SIZE(HDRP(bp));
 
     if (prev_alloc && next_alloc) {              /* Case 1 */
-       //TODO watch out, return statement could prevent setting free_list_head; probably delete cause it doesnt do anything anyways
+        add_to_free_list(bp);                   // Jasper, Hynes
         return bp;
 
     } else if (prev_alloc && !next_alloc) {      /* Case 2 */
@@ -265,7 +281,9 @@ static void *coalesce(void *bp) {
         bp = PREV_BLKP(bp);
     }
 
-    //TODO Once we have the new coalesced block, it gets placed as the head of the free list & is given a pointer to the old free list header
+    // Once we have the new coalesced block, it gets placed as the head of the free list & is given a pointer to the old free list header
+
+    add_to_free_list(bp);                       // Jasper, Hynes
     return bp;
 }
 
@@ -307,18 +325,22 @@ static void *extend_heap(size_t words) {
 static void place(void *bp, size_t asize) {
     size_t csize = GET_SIZE(HDRP(bp));
 
-    if ((csize - asize) >= (2 * DSIZE)) {
+    if ((csize - asize) >= MIN_SIZE) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
+        //Make sure the leftover free block gets placed as the head of the free list & is given a pointer to the old free list header (coalescce() is not called, therefore placement needed)
+
+        add_to_free_list(bp);                    // Jasper, Hynes
+
     } else {
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
     }
 
-    //TODO Make sure the leftover free block gets placed as the head of the free list & is given a pointer to the old free list header
+
 }
 
 
