@@ -149,8 +149,7 @@ int mm_init(void) {
 
 
 
-    if (extend_heap(CHUNKSIZE / WSIZE) ==
-        NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+    if (extend_heap(CHUNKSIZE / WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
 
@@ -417,7 +416,7 @@ static void remove_block_from_list(unsigned long *bp) {
         PUT_POINTER(GET_PREVIOUS(GET_NEXT(bp)), *GET_PREVIOUS(bp));
 
     check_free_list();
-    printf("\nEnd of remove_block: %p\n\n", bp);
+    printf("End of remove_block: %p\n\n", bp);
 }
 
 
@@ -441,10 +440,13 @@ static void printblock(void *bp) {
 }
 
 static void checkblock(void *bp) {
-    if ((size_t) bp % 8)
+    if ((size_t) bp % 8) {
         printf("Error: %p is not doubleword aligned\n", bp);
-    if (GET(HDRP(bp)) != GET(FTRP(bp)))
-        printf("Error: header does not match footer\n");
+    }
+
+    if (GET(HDRP(bp)) != GET(FTRP(bp))) {
+        printf("Error: %p header does not match footer\n", bp);
+    }
 }
 
 /*
@@ -510,15 +512,54 @@ void checkheap(int verbose) {
 }
 
 static void check_free_list() {
+    printf("==============================\n");
+    printf("FREE LIST CHECK START:\n");
 
-    printf("\n\nSTART CHECK_FREE_LIST START\n\n");
     unsigned long **fp = free_list_head;
+
+    printf("------------------------------\n");
     printf("Free List Head: %p\n", free_list_head);
-    for (fp; fp != NULL; fp = (unsigned long **) *fp) {
-        printblock(fp);
-        printf("NEXT: %p\n", *GET_NEXT(fp));
-        printf("PREV: %p\n\n", *GET_PREVIOUS(fp));
+    printf("------------------------------\n");
+
+    for (fp; fp != NULL; fp = GET_NEXT(*fp)) {
+
+        size_t hsize, halloc, fsize, falloc;
+
+        hsize = GET_SIZE(HDRP(fp));
+        halloc = GET_ALLOC(HDRP(fp));
+        fsize = GET_SIZE(FTRP(fp));
+        falloc = GET_ALLOC(FTRP(fp));
+
+        printf("Address: \t%p\n", fp);
+        printf("header: \t[%zu:%c]\n", hsize, (halloc ? 'a' : 'f'));
+        printf("Next_Ptr: \t%p\n", *GET_NEXT(fp));
+        printf("Prev_Ptr: \t%p\n", *GET_PREVIOUS(fp));
+        printf("footer: \t[%zu:%c]\n", fsize, (falloc ? 'a' : 'f'));
+
+        if ((size_t) fp % 8) {
+            printf("Error: %p is not doubleword aligned\n", fp);
+        } else {
+            printf("Double-Word aligned: \tTrue.\n");
+        }
+
+        if (GET(HDRP(fp)) != GET(FTRP(fp))) {
+            printf("Error: header does not match footer\n");
+        } else {
+            printf("Header matches footer: \tTrue.\n");
+        }
+
+
+
+        if (GET_NEXT(*fp) == NULL) {
+            printf("----------\n");
+            printf("--End of Free List--\n");
+            printf("----------\n");
+            printf("----------\n");
+        } else {
+            printf("----------\n");
+        }
     }
 
-    printf("END CHECK_FREE_LIST END\n\n");
+    printf("FREE LIST CHECK END.\n");
+    printf("==============================\n\n\n");
 }
