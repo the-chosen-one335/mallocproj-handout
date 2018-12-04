@@ -123,6 +123,8 @@ static void checkblock(void *bp);
 static void remove_block_from_list(unsigned long *bp);
 
 static void check_free_list();
+
+static void *find_fit_explicit(size_t asize);
 // mm_init - Initialize the memory manager
 
 int mm_init(void) {
@@ -216,7 +218,7 @@ void *mm_malloc(size_t size) {
                          DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
 
     /* Search the free list for a fit */
-    if ((bp = find_fit(asize)) != NULL) {
+    if ((bp = find_fit_explicit(asize)) != NULL) {
         place(bp, asize);
         return bp;
     }
@@ -423,10 +425,10 @@ static void *find_fit_explicit(size_t asize) {
 
     // first fit explicit list
     unsigned long **bp = free_list_head;
-    for (bp = free_list_head; GET_NEXT(bp) != NULL; bp = GET_NEXT(bp)) {
+    for (bp = free_list_head; GO_NEXT(bp) != NULL; bp = GET_NEXT(bp)) {
         if ((asize <= GET_SIZE(HDRP(bp)))) {
             // error statement when block is taken
-            remove_block_from_list(bp);
+
             return bp;
         }
     }
