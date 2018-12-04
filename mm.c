@@ -126,6 +126,7 @@ static void check_free_list();
 // mm_init - Initialize the memory manager
 
 int mm_init(void) {
+    free_list_head = NULL;
     /* Create the initial empty heap */
     //HYNES: heap_listp is the pointer to the first block of the heap
     //HYNES: mem_sbrk is the last block of memory in the current heap
@@ -156,6 +157,8 @@ int mm_init(void) {
     if (extend_heap(CHUNKSIZE / WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
+
+
 
 
     //HYNES: An interesting visual I quote from "https://www.cs.cmu.edu/~fp/courses/15213-s05/code/18-malloc/malloc.c" for better understanding
@@ -250,7 +253,7 @@ void mm_free(void *bp) {
 
 static void remove_block_from_list(unsigned long *bp) {
     printf("\nBeginning of remove_block: %p\n", bp);
-    //check_free_list();
+    check_free_list();
 
     //update previous block in list
     if (GET_PREVIOUS(bp) != NULL)
@@ -262,19 +265,16 @@ static void remove_block_from_list(unsigned long *bp) {
     if (GET_NEXT(bp) != NULL)
         PUT_POINTER(GO_PREVIOUS(GET_NEXT(bp)), GET_PREVIOUS(bp));
 
-    //check_free_list();
+    check_free_list();
     printf("End of remove_block: %p\n\n", bp);
 }
 
 
 static void add_to_free_list(unsigned long **free_block_pointer) {
 
-    if(GET_ALLOC(free_block_pointer)){
-        printf("\n\nWARNING: trying to add allocated block to free list!\n\n");
-    }
+    printf("\nBeginning of add_to_free_list()\n");
+    check_free_list();
 
-  //  printf("\nBeginning of add_to_free_list()\n");
-  // check_free_list();
     //set the previous pointer of our free block to null
     //plus 1 bc: its type long, it therefore moves it on incrementation by sizeof(long) bytes
     PUT_POINTER(GO_PREVIOUS(free_block_pointer), NULL);
@@ -286,14 +286,14 @@ static void add_to_free_list(unsigned long **free_block_pointer) {
         //sets the
         PUT_POINTER(GO_PREVIOUS(free_list_head), free_block_pointer);
     } else {
-        *free_block_pointer = NULL;
+        PUT_POINTER(GO_NEXT(free_block_pointer), NULL);
     }
 
     //set head of free list to new free block;
     free_list_head = free_block_pointer;
 
-   // check_free_list();
-   // printf("End of add_to_free_list()\n");
+   check_free_list();
+   printf("End of add_to_free_list()\n");
 
 }
 
@@ -315,6 +315,7 @@ static void *coalesce(void *bp) {
     }
 
     if (prev_alloc && next_alloc) {              /* Case 1 */
+        //This is the second shit triggering infiloop
         add_to_free_list(bp);                   // Jasper, Hynes
         return bp;
 
@@ -376,19 +377,20 @@ static void *extend_heap(size_t words) {
  */
 static void place(void *bp, size_t asize) {
     size_t csize = GET_SIZE(HDRP(bp));
-
+    remove_block_from_list(bp);
     if ((csize - asize) >= MIN_SIZE) {
+        //HERE IS THE SHIT
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
+        //HERE THE SHIT ENDS
+        check_free_list();
         if(GET_ALLOC(NEXT_BLKP(bp))){
             printf("HERE");
         }
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
-
         add_to_free_list((unsigned long **)bp);                    // Jasper, Hynes
-
     } else {
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
@@ -406,7 +408,7 @@ static void *find_fit(size_t asize) {
 
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
         if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-            remove_block_from_list(bp);
+            //here was the remove_block but we will move it to place()
             return bp;
         }
     }
