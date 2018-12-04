@@ -18,24 +18,24 @@
  * provide your group information in the following struct.
  ********************************************************/
 group_t group = {
-    /* Project group number (You're required to join a group on Canvas) */
-    "79",
-    /* First member's full name */
-    "Zachary Hynes",
-    /* First member's email address */
-    "zamhynes2-c@my.cityu.edu.hk",
-    /* Second member's full name (leave blank if none) */
-    "Jasper Spierling",
-    /* Second member's email address (leave blank if none) */
-    "jspierlin2-c@my.cityu.edu.hk",
-    /* Third member's full name (leave blank if none) */
-    "Christian Wanzek",
-    /* Third member's email address (leave blank if none) */
-    "ckwanzek2-c@my.cityu.edu.hk"
-    /* Fourth member's full name (leave blank if none) */
-    "",
-    /* Fourth member's email address (leave blank if none) */
-    ""
+        /* Project group number (You're required to join a group on Canvas) */
+        "79",
+        /* First member's full name */
+        "Zachary Hynes",
+        /* First member's email address */
+        "zamhynes2-c@my.cityu.edu.hk",
+        /* Second member's full name (leave blank if none) */
+        "Jasper Spierling",
+        /* Second member's email address (leave blank if none) */
+        "jspierlin2-c@my.cityu.edu.hk",
+        /* Third member's full name (leave blank if none) */
+        "Christian Wanzek",
+        /* Third member's email address (leave blank if none) */
+        "ckwanzek2-c@my.cityu.edu.hk"
+        /* Fourth member's full name (leave blank if none) */
+        "",
+        /* Fourth member's email address (leave blank if none) */
+        ""
 };
 
 /* Basic constants and macros */
@@ -61,8 +61,8 @@ group_t group = {
 #define GET(p)       (*(unsigned int *)(p))
 
 // get_next, get_previous added for free block expicit list pointers
-#define GET_NEXT(bp) (*(unsigned long *)(bp))
-#define GET_PREVIOUS(bp) (*(((unsigned long *)(bp))+1))
+#define GET_NEXT(bp) (*(unsigned long **)(bp))
+#define GET_PREVIOUS(bp) (*(((unsigned long **)(bp))+1))
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
@@ -216,8 +216,6 @@ void *mm_malloc(size_t size) {
     if ((bp = extend_heap(extendsize / WSIZE)) == NULL)
         return NULL;
 
-    //TODO Once we have the new memory, it gets placed as the head of the free list & is given a pointer to the old free list header
-
     place(bp, asize);
 
     return bp;
@@ -240,19 +238,26 @@ void mm_free(void *bp) {
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     coalesce(bp);
-
-
 }
 
 
 // coalesce - Boundary tag coalescing. Return ptr to coalesced block
 
 static void add_to_free_list(unsigned long **free_block_pointer) {
+
+    //set the previous pointer of our free block to null
+    //plus 1 bc: its type long, it therefore moves it on incrementation by sizeof(long) bytes
+    PUT_POINTER((free_block_pointer + 1), NULL);
+
     //set next pointer of new free block to current head of free list;
-    if (free_list_head != NULL)
+    if (free_list_head != NULL) {
         PUT_POINTER(free_block_pointer, free_list_head);
-    else
+
+        //sets the
+        PUT_POINTER(((free_list_head)+1), free_block_pointer);
+    } else {
         *free_block_pointer = NULL;
+    }
 
     //set head of free list to new free block;
     free_list_head = free_block_pointer;
@@ -267,6 +272,7 @@ static void *coalesce(void *bp) {
         add_to_free_list(bp);                   // Jasper, Hynes
         return bp;
 
+        // TODO make sure old entry in free list is being skipped
     } else if (prev_alloc && !next_alloc) {      /* Case 2 */
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
         PUT(HDRP(bp), PACK(size, 0));
@@ -293,9 +299,6 @@ static void *coalesce(void *bp) {
 }
 
 
-/*
- * The remaining routines are internal helper routines
- */
 
 
 // The remaining routines are internal helper routines
@@ -363,12 +366,15 @@ static void *find_fit(size_t asize) {
 
 }
 
-static void *find_fit_explicit(size_t asize){
-    void *bp;
-
-}
-
 //TODO Write a new find_fit_explicit function that works with our free list
+//TODO call in malloc
+
+static void *find_fit_explicit(size_t asize) {
+    // first fit explicit list
+    unsigned long **bp = free_list_head;
+
+    return bp;
+}
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
