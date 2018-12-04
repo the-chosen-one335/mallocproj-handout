@@ -63,12 +63,16 @@ group_t group = {
 // get_next, get_previous added for free block expicit list pointers
 
 // Jasper:  dereference removed (*)
-#define GET_NEXT(bp) ((unsigned long **)(bp))
-#define GET_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
+
+#define GO_NEXT(bp) ((unsigned long **)(bp))
+#define GO_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
+
+#define GET_NEXT(bp)     *GO_NEXT(bp)
+#define GET_PREVIOUS(bp) *GO_PREVIOUS(bp)
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
-#define PUT_POINTER(p, ptr) (*(unsigned long *)p =((unsigned long)(ptr)))
+#define PUT_POINTER(prev, next) (*(unsigned long *)prev =((unsigned long)(next)))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
@@ -211,7 +215,6 @@ void *mm_malloc(size_t size) {
     /* Search the free list for a fit */
     if ((bp = find_fit(asize)) != NULL) {
         place(bp, asize);
-
         return bp;
     }
 
@@ -245,9 +248,33 @@ void mm_free(void *bp) {
 }
 
 
-// coalesce - Boundary tag coalescing. Return ptr to coalesced block
+static void remove_block_from_list(unsigned long *bp) {
+    printf("\nBeginning of remove_block: %p\n", bp);
+    //check_free_list();
+    //update previous block in list
+
+    printf("undereferenced: %p\n", bp);
+    printf("dereferenced: %p\n", *bp);
+
+    if (*GET_PREVIOUS(bp) != NULL)
+        PUT_POINTER((GET_PREVIOUS(bp)), *GET_NEXT(bp));
+    else
+        free_list_head = *GET_NEXT(bp);
+
+    //update next block in list
+    if (*GET_NEXT(bp) != NULL)
+        PUT_POINTER(GET_PREVIOUS(*GET_NEXT(bp)), *GET_PREVIOUS(bp));
+
+    //check_free_list();
+    printf("End of remove_block: %p\n\n", bp);
+}
+
 
 static void add_to_free_list(unsigned long **free_block_pointer) {
+
+    if(GET_ALLOC(free_block_pointer)){
+        printf("\n\nWARNING: trying to add allocated block to free list!\n\n");
+    }
   //  printf("\nBeginning of add_to_free_list()\n");
   // check_free_list();
     //set the previous pointer of our free block to null
@@ -271,6 +298,8 @@ static void add_to_free_list(unsigned long **free_block_pointer) {
    // printf("End of add_to_free_list()\n");
 
 }
+
+// coalesce - Boundary tag coalescing. Return ptr to coalesced block
 
 static void *coalesce(void *bp) {
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
@@ -353,12 +382,15 @@ static void place(void *bp, size_t asize) {
     if ((csize - asize) >= MIN_SIZE) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
+        if(GET_ALLOC(NEXT_BLKP(bp))){
+            printf("HERE");
+        }
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
         //Make sure the leftover free block gets placed as the head of the free list & is given a pointer to the old free list header (coalescce() is not called, therefore placement needed)
 
-        add_to_free_list(bp);                    // Jasper, Hynes
+        add_to_free_list((unsigned long **)bp);                    // Jasper, Hynes
 
     } else {
         PUT(HDRP(bp), PACK(csize, 1));
@@ -401,24 +433,6 @@ static void *find_fit_explicit(size_t asize) {
     }
     return NULL;
 }
-
-static void remove_block_from_list(unsigned long *bp) {
-    printf("\nBeginning of remove_block: %p\n", bp);
-    check_free_list();
-    //update previous block in list
-    if (*GET_PREVIOUS(bp) != NULL)
-        PUT_POINTER((GET_PREVIOUS(bp)), *GET_NEXT(bp));
-    else
-        free_list_head = *GET_NEXT(bp);
-
-    //update next block in list
-    if (*GET_NEXT(bp) != NULL)
-        PUT_POINTER(GET_PREVIOUS(GET_NEXT(bp)), *GET_PREVIOUS(bp));
-
-    check_free_list();
-    printf("End of remove_block: %p\n\n", bp);
-}
-
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
