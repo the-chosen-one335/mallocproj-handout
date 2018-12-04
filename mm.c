@@ -72,7 +72,7 @@ group_t group = {
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
-#define PUT_POINTER(prev, next) (*(unsigned long *)prev =((unsigned long)(next)))
+#define PUT_POINTER(bp, next) (*(unsigned long *)bp =((unsigned long)(next)))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
@@ -251,19 +251,16 @@ void mm_free(void *bp) {
 static void remove_block_from_list(unsigned long *bp) {
     printf("\nBeginning of remove_block: %p\n", bp);
     //check_free_list();
+
     //update previous block in list
-
-    printf("undereferenced: %p\n", bp);
-    printf("dereferenced: %p\n", *bp);
-
-    if (*GET_PREVIOUS(bp) != NULL)
-        PUT_POINTER((GET_PREVIOUS(bp)), *GET_NEXT(bp));
+    if (GET_PREVIOUS(bp) != NULL)
+        PUT_POINTER((GET_PREVIOUS(bp)), GET_NEXT(bp));
     else
-        free_list_head = *GET_NEXT(bp);
+        free_list_head = GET_NEXT(bp);
 
     //update next block in list
-    if (*GET_NEXT(bp) != NULL)
-        PUT_POINTER(GET_PREVIOUS(*GET_NEXT(bp)), *GET_PREVIOUS(bp));
+    if (GET_NEXT(bp) != NULL)
+        PUT_POINTER(GO_PREVIOUS(GET_NEXT(bp)), GET_PREVIOUS(bp));
 
     //check_free_list();
     printf("End of remove_block: %p\n\n", bp);
@@ -275,18 +272,19 @@ static void add_to_free_list(unsigned long **free_block_pointer) {
     if(GET_ALLOC(free_block_pointer)){
         printf("\n\nWARNING: trying to add allocated block to free list!\n\n");
     }
+
   //  printf("\nBeginning of add_to_free_list()\n");
   // check_free_list();
     //set the previous pointer of our free block to null
     //plus 1 bc: its type long, it therefore moves it on incrementation by sizeof(long) bytes
-    PUT_POINTER((free_block_pointer + 1), NULL);
+    PUT_POINTER(GO_PREVIOUS(free_block_pointer), NULL);
 
     //set next pointer of new free block to current head of free list;
     if (free_list_head != NULL) {
-        PUT_POINTER(free_block_pointer, free_list_head);
+        PUT_POINTER(GO_NEXT(free_block_pointer), free_list_head);
 
         //sets the
-        PUT_POINTER(((free_list_head) + 1), free_block_pointer);
+        PUT_POINTER(GO_PREVIOUS(free_list_head), free_block_pointer);
     } else {
         *free_block_pointer = NULL;
     }
@@ -388,7 +386,6 @@ static void place(void *bp, size_t asize) {
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
-        //Make sure the leftover free block gets placed as the head of the free list & is given a pointer to the old free list header (coalescce() is not called, therefore placement needed)
 
         add_to_free_list((unsigned long **)bp);                    // Jasper, Hynes
 
@@ -535,7 +532,7 @@ static void check_free_list() {
     printf("Free List Head: %p\n", free_list_head);
     printf("------------------------------\n");
 
-    for (fp; fp != NULL; fp = GET_NEXT(*fp)) {
+    for (fp; fp != NULL; fp = GET_NEXT(fp)) {
 
         size_t hsize, halloc, fsize, falloc;
 
@@ -546,8 +543,8 @@ static void check_free_list() {
 
         printf("Address: \t%p\n", fp);
         printf("header: \t[%zu:%c]\n", hsize, (halloc ? 'a' : 'f'));
-        printf("Next_Ptr: \t%p\n", *GET_NEXT(fp));
-        printf("Prev_Ptr: \t%p\n", *GET_PREVIOUS(fp));
+        printf("Next_Ptr: \t%p\n", GET_NEXT(fp));
+        printf("Prev_Ptr: \t%p\n", GET_PREVIOUS(fp));
         printf("footer: \t[%zu:%c]\n", fsize, (falloc ? 'a' : 'f'));
 
         if ((size_t) fp % 8) {
@@ -564,7 +561,7 @@ static void check_free_list() {
 
 
 
-        if (GET_NEXT(*fp) == NULL) {
+        if (GET_NEXT(fp) == NULL) {
             printf("----------\n");
             printf("--End of Free List--\n");
             printf("----------\n");
