@@ -43,7 +43,7 @@ group_t group = {
 #define DSIZE       8       /* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
-#define MIN_SIZE    (2*DSIZE)
+#define MIN_SIZE    (3*DSIZE) //3 bc one for head/foot, one for 8byte next pointer, one for same size previous pointer
 
 /*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
@@ -61,8 +61,10 @@ group_t group = {
 #define GET(p)       (*(unsigned int *)(p))
 
 // get_next, get_previous added for free block expicit list pointers
-#define GET_NEXT(bp) (*(unsigned long **)(bp))
-#define GET_PREVIOUS(bp) (*(((unsigned long **)(bp))+1))
+
+// Jasper:  dereference removed (*)
+#define GET_NEXT(bp) ((unsigned long **)(bp))
+#define GET_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
 
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
@@ -114,7 +116,9 @@ static void checkheap(int verbose);
 
 static void checkblock(void *bp);
 
+static void remove_block_from_list(unsigned long *bp);
 
+static void check_free_list();
 // mm_init - Initialize the memory manager
 
 int mm_init(void) {
@@ -145,7 +149,8 @@ int mm_init(void) {
 
 
 
-    if (extend_heap(CHUNKSIZE / WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+    if (extend_heap(CHUNKSIZE / WSIZE) ==
+        NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
 
@@ -244,7 +249,8 @@ void mm_free(void *bp) {
 // coalesce - Boundary tag coalescing. Return ptr to coalesced block
 
 static void add_to_free_list(unsigned long **free_block_pointer) {
-
+  //  printf("\nBeginning of add_to_free_list()\n");
+  // check_free_list();
     //set the previous pointer of our free block to null
     //plus 1 bc: its type long, it therefore moves it on incrementation by sizeof(long) bytes
     PUT_POINTER((free_block_pointer + 1), NULL);
@@ -254,13 +260,17 @@ static void add_to_free_list(unsigned long **free_block_pointer) {
         PUT_POINTER(free_block_pointer, free_list_head);
 
         //sets the
-        PUT_POINTER(((free_list_head)+1), free_block_pointer);
+        PUT_POINTER(((free_list_head) + 1), free_block_pointer);
     } else {
         *free_block_pointer = NULL;
     }
 
     //set head of free list to new free block;
     free_list_head = free_block_pointer;
+
+   // check_free_list();
+   // printf("End of add_to_free_list()\n");
+
 }
 
 static void *coalesce(void *bp) {
@@ -268,11 +278,20 @@ static void *coalesce(void *bp) {
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
 
+    if (!prev_alloc) {
+        //remove prev
+        remove_block_from_list((unsigned long *) PREV_BLKP(bp));
+    }
+
+    if (!next_alloc) {
+        //remove next
+        remove_block_from_list((unsigned long *) NEXT_BLKP(bp));
+    }
+
     if (prev_alloc && next_alloc) {              /* Case 1 */
         add_to_free_list(bp);                   // Jasper, Hynes
         return bp;
 
-        // TODO make sure old entry in free list is being skipped
     } else if (prev_alloc && !next_alloc) {      /* Case 2 */
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
         PUT(HDRP(bp), PACK(size, 0));
@@ -359,6 +378,7 @@ static void *find_fit(size_t asize) {
 
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
         if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+            remove_block_from_list(bp);
             return bp;
         }
     }
@@ -370,11 +390,36 @@ static void *find_fit(size_t asize) {
 //TODO call in malloc
 
 static void *find_fit_explicit(size_t asize) {
+
     // first fit explicit list
     unsigned long **bp = free_list_head;
-
-    return bp;
+    for (bp = free_list_head; GET_NEXT(bp) != NULL; bp = GET_NEXT(bp)) {
+        if ((asize <= GET_SIZE(HDRP(bp)))) {
+            // error statement when block is taken
+            remove_block_from_list(bp);
+            return bp;
+        }
+    }
+    return NULL;
 }
+
+static void remove_block_from_list(unsigned long *bp) {
+    printf("\nBeginning of remove_block: %p\n", bp);
+    check_free_list();
+    //update previous block in list
+    if (*GET_PREVIOUS(bp) != NULL)
+        PUT_POINTER((GET_PREVIOUS(bp)), *GET_NEXT(bp));
+    else
+        free_list_head = *GET_NEXT(bp);
+
+    //update next block in list
+    if (*GET_NEXT(bp) != NULL)
+        PUT_POINTER(GET_PREVIOUS(GET_NEXT(bp)), *GET_PREVIOUS(bp));
+
+    check_free_list();
+    printf("\nEnd of remove_block: %p\n\n", bp);
+}
+
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
@@ -462,4 +507,18 @@ void checkheap(int verbose) {
     //Allocate Bit Consistency
     //Matching Header and Footer -- Already implemented in static void checkblock(void *bp)
 
+}
+
+static void check_free_list() {
+
+    printf("\n\nSTART CHECK_FREE_LIST START\n\n");
+    unsigned long **fp = free_list_head;
+    printf("Free List Head: %p\n", free_list_head);
+    for (fp; fp != NULL; fp = (unsigned long **) *fp) {
+        printblock(fp);
+        printf("NEXT: %p\n", *GET_NEXT(fp));
+        printf("PREV: %p\n\n", *GET_PREVIOUS(fp));
+    }
+
+    printf("END CHECK_FREE_LIST END\n\n");
 }
