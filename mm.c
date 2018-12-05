@@ -130,9 +130,11 @@ static void remove_block_from_list(unsigned long *bp);
 
 static void check_free_list();
 
-static void *find_fit_explicit(size_t asize);
+static void *find_fit_segmented(size_t asize);
 
 static int which_list(void* bp);
+
+static int which_list_asize(int size);
 
 // mm_init - Initialize the memory manager
 
@@ -154,12 +156,15 @@ int mm_init(void) {
 
 //adjust for umber of pointers; old size: 4*WSIZE; one pointer: plus DSIZE
 //reserves space between heap header (0,0) and prologue (8,1) for the pointers to lists
-//TODO: change dsize to size of pointer
     if ((heap_listp = mem_sbrk(4 * WSIZE+SIZE_OF_SEG_STORAGE)) == (void *) -1)
         return -1;
     PUT(heap_listp, 0);/* Alignment padding */    //HYNES: 0   ???
     seg_list_head = heap_listp + (1 * WSIZE);
-    //TODO: null the memory space reserved for pointers (for(i = 0; i<=offset, i++) get_list = null
+    //TODO: null the memory space reserved for pointers
+    for(int i = 0; i<number_of_lists; i++){
+        printf("GET CALLED THE FIRST TIME");
+        GET_LIST(i)=NULL;
+    }
     PUT(heap_listp + (1 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
     PUT(heap_listp + (2 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
     PUT(heap_listp + (3 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
@@ -231,7 +236,7 @@ void *mm_malloc(size_t size) {
                          DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
 
     /* Search the free list for a fit */
-    if ((bp = find_fit_explicit(asize)) != NULL) {
+    if ((bp = find_fit_segmented(asize)) != NULL) {
         place(bp, asize);
         return bp;
     }
@@ -437,6 +442,14 @@ static int which_list(void* bp){
 
     //extract the size of the block pointer
 
+    //call which list asze to figure out list number
+
+    return 0;
+}
+
+
+static int which_list_asize(int size){
+
     //figure out which segmented list it goes into
 
     //return that list #
@@ -459,11 +472,12 @@ static void *find_fit(size_t asize) {
 }
 
 
-static void *find_fit_explicit(size_t asize) {
+static void *find_fit_segmented(size_t asize) {
 
+    int num = which_list_asize(asize);
     // first fit explicit list
-    unsigned long **bp = free_list_head;
-    for (bp = free_list_head; GO_NEXT(bp) != NULL; bp = (typeof(bp))GET_NEXT(bp)) {
+    unsigned long **bp = GET_LIST(num);
+    for (bp; GO_NEXT(bp) != NULL; bp = (typeof(bp))GET_NEXT(bp)) {
         if ((asize <= GET_SIZE(HDRP(bp)))) {
             // error statement when block is taken
 
