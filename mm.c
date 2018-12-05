@@ -41,12 +41,13 @@ group_t group = {
 /* Basic constants and macros */
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
-//TODO move chunsize up to get faster
-#define CHUNKSIZE  (1<<8)  /* Extend heap by this amount (bytes) */
+
+// move chonksize up to get faster: 1<<12 is optimal on server
+#define CHONKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
-#define MIN_SIZE    (3*DSIZE) //3 bc one for head/foot, one for 8byte next pointer, one for same size previous pointer
+#define MIN_SIZE    (DSIZE+2*POINTERSIZE) // one DWORD for header/footer, one for 8byte next pointer, one for same size previous pointer
 #define SIZE_OF_SEG_STORAGE   (number_of_lists*POINTERSIZE)
-/*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
+/*  HYNES: CHONKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
 
 
@@ -62,7 +63,7 @@ group_t group = {
 #define GET(p)       (*(unsigned int *)(p))
 
 
-// go_bext, go_previous, get_next, get_previous added for free block expicit list pointers
+// JASPER: go_next, go_previous, get_next, get_previous added for free block expicit list pointers
 #define GO_NEXT(bp) ((unsigned long **)(bp))
 #define GO_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
 
@@ -174,10 +175,10 @@ int mm_init(void) {
     PUT(heap_listp + (3 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
     heap_listp += (2 * WSIZE + SIZE_OF_SEG_STORAGE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
-    /* Extend the empty heap with a free block of CHUNKSIZE bytes */
+    /* Extend the empty heap with a free block of CHONKSIZE bytes */
 
 
-    if (extend_heap(CHUNKSIZE / WSIZE) ==
+    if (extend_heap(CHONKSIZE / WSIZE) ==
         NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
@@ -246,7 +247,7 @@ void *mm_malloc(size_t size) {
     }
 
     /* No fit found. Get more memory and place the block */
-    extendsize = MAX(asize, CHUNKSIZE);
+    extendsize = MAX(asize, CHONKSIZE);
     if ((bp = extend_heap(extendsize / WSIZE)) == NULL)
         return NULL;
 
@@ -259,8 +260,10 @@ void *mm_malloc(size_t size) {
 // mm_free - Free a block
 
 void mm_free(void *bp) {
+
     // printf("Freeing block: ");
     // printblock(bp);
+
     if (bp == 0)
         return;
 
@@ -275,11 +278,13 @@ void mm_free(void *bp) {
 }
 
 static void remove_block_from_list(unsigned long *bp) {
+
     //check_segregated();
 
-    int num = which_list(bp);
     //printf("\nBeginning of remove_block: %p\n", bp);
     // check_free_list();
+
+    int num = which_list(bp);
 
     //update previous block in list
     if (GET_PREVIOUS(bp) != NULL)
@@ -297,9 +302,10 @@ static void remove_block_from_list(unsigned long *bp) {
 
 static void add_to_free_list(unsigned long **bp) {
 
-    int num = which_list((void *) bp);
     //printf("\nBeginning of add_to_free_list: %p\n", bp);
     //check_free_list();
+
+    int num = which_list((void *) bp);
 
     //set the previous pointer of our free block to null
     PUT_POINTER(GO_PREVIOUS(bp), NULL);
