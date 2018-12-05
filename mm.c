@@ -69,7 +69,7 @@ group_t group = {
 #define GET_NEXT(bp)     *GO_NEXT(bp)
 #define GET_PREVIOUS(bp) *GO_PREVIOUS(bp)
 
-//SEGMENTED: moves from heaplistp position AFTER mm_init back up to get to the pointers; setoff = 0 brings us to pointer closest to prologue, with every increment of setoff we move closer to the beginning of the heap
+//segregated: moves from heaplistp position AFTER mm_init back up to get to the pointers; setoff = 0 brings us to pointer closest to prologue, with every increment of setoff we move closer to the beginning of the heap
 #define GO_LIST(offset) (((unsigned long **)(((char *)seg_list_head)+(POINTERSIZE*(offset)))))
 #define GET_LIST(offset) *(GO_LIST(offset))
 
@@ -110,7 +110,7 @@ static unsigned long **free_list_head = NULL; /* pointer to the beginning of exp
 static void **seg_list_head = NULL;
 
 //JASPER: NEW: number of lists located ON HEAP, set up in mm_init
-static int number_of_lists = 2;
+static int number_of_lists = 15;
 
 /* Function prototypes for internal helper routines */
 
@@ -134,9 +134,9 @@ static void remove_block_from_list(unsigned long *bp);
 
 static void check_free_list();
 
-static void check_segmented();
+static void check_segregated();
 
-static void *find_fit_segmented(size_t asize);
+static void *find_fit_segregated(size_t asize);
 
 static int which_list(void *bp);
 
@@ -164,12 +164,10 @@ int mm_init(void) {
         return -1;
     PUT(heap_listp, 0);/* Alignment padding */    //HYNES: 0   ???
     seg_list_head = heap_listp + (1 * WSIZE);
-    //TODO: null the memory space reserved for pointers
-    int i = 0;
-    for (i = 0; i < number_of_lists; i++) {
+
+    for (int i = 0; i < number_of_lists; i++) {
         GET_LIST(i) = NULL;
     }
-
 
     PUT(heap_listp + (1 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
     PUT(heap_listp + (2 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
@@ -242,7 +240,7 @@ void *mm_malloc(size_t size) {
                          DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
 
     /* Search the free list for a fit */
-    if ((bp = find_fit_segmented(asize)) != NULL) {
+    if ((bp = find_fit_segregated(asize)) != NULL) {
         place(bp, asize);
         return bp;
     }
@@ -277,7 +275,7 @@ void mm_free(void *bp) {
 }
 
 static void remove_block_from_list(unsigned long *bp) {
-    //check_segmented();
+    //check_segregated();
 
     int num = which_list(bp);
     //printf("\nBeginning of remove_block: %p\n", bp);
@@ -425,11 +423,16 @@ static int which_list(void *bp) {
 }
 
 static int which_list_asize(int size) {
-    int num = 0;
-    if (size > 20000) {
-        num = 1;
+
+    size = size>>5;
+    int i  = 0;
+    while(size!=0){
+        size=size>>1;
+        i++;
     }
-    return num;
+    if(i>number_of_lists-1)
+        i=number_of_lists-1;
+    return i;
 }
 
 static void *find_fit(size_t asize) {
@@ -447,7 +450,7 @@ static void *find_fit(size_t asize) {
 }
 
 
-static void *find_fit_segmented(size_t asize) {
+static void *find_fit_segregated(size_t asize) {
     int num = which_list_asize(asize);
     // first fit seg list
     unsigned long **bp = NULL;
@@ -471,8 +474,7 @@ static void *find_fit_segmented(size_t asize) {
 
 //print functions
 
-static void check_segmented() {
-    //TODO: to test implementation, add a get_list call for locations to see what is found there
+static void check_segregated() {
     printf("\n\nseg_list_head:\t\t\t%p\n", seg_list_head);
     printf("check (expected: ???):\t%zu\n", (size_t) *seg_list_head);
     printf("one word above seg_list_head (expected: 0): %d\n", *(unsigned int *) (((char *) seg_list_head) - WSIZE));
