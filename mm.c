@@ -44,7 +44,7 @@ group_t group = {
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
 #define MIN_SIZE    (3*DSIZE) //3 bc one for head/foot, one for 8byte next pointer, one for same size previous pointer
-
+#define SIZE_OF_SEG_STORAGE   (number_of_lists*POINTERSIZE)
 /*  HYNES: CHUNKSIZE = 4096 bytes, the minimum size a file must occupy is one block,
  * which is usually 4096 bytes/4K on most filesystems. */
 
@@ -60,19 +60,21 @@ group_t group = {
  * and then it uses the * Dereferencing Operator to go to the address stored in p and access it. */
 #define GET(p)       (*(unsigned int *)(p))
 
-// get_next, get_previous added for free block expicit list pointers
 
-// Jasper:  dereference removed (*)
-
+// go_bext, go_previous, get_next, get_previous added for free block expicit list pointers
 #define GO_NEXT(bp) ((unsigned long **)(bp))
 #define GO_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
 
 #define GET_NEXT(bp)     *GO_NEXT(bp)
 #define GET_PREVIOUS(bp) *GO_PREVIOUS(bp)
 
+//SEGMENTED: moves from heaplistp position AFTER mm_init back up to get to the pointers; setoff = 0 brings us to pointer closest to prologue, with every increment of setoff we move closer to the beginning of the heap
+#define GO_LIST(offset) (((unsigned long **)(((char *)seg_list_head)+(POINTERSIZE*(offset)))))
+#define GET_LIST(offset) *(GO_LIST(offset))
+
 
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
-#define PUT_POINTER(bp, next) (*(unsigned long *)bp =((unsigned long)(next)))
+#define PUT_POINTER(bp, next) (*(unsigned long *)(bp) =((unsigned long)(next)))
 
 /* Read the size and allocated fields from address p */
 /* HYNES: ~ is the bitwise COMPLIMENT (Negation)
@@ -104,6 +106,10 @@ group_t group = {
 /* Global variables */
 static char *heap_listp = 0;  /* Pointer to first block */
 static unsigned long **free_list_head = NULL; /* pointer to the beginning of explicit free list */
+static void **seg_list_head = NULL;
+
+//JASPER: NEW: number of lists located ON HEAP, set up in mm_init
+static int number_of_lists = 1;
 
 /* Function prototypes for internal helper routines */
 static void *extend_heap(size_t words);
@@ -125,6 +131,9 @@ static void remove_block_from_list(unsigned long *bp);
 static void check_free_list();
 
 static void *find_fit_explicit(size_t asize);
+
+static int which_list(void* bp);
+
 // mm_init - Initialize the memory manager
 
 int mm_init(void) {
@@ -143,14 +152,18 @@ int mm_init(void) {
     //-------------PUT-------------
     //==============================
 
-
-    if ((heap_listp = mem_sbrk(4 * WSIZE)) == (void *) -1)
+//adjust for umber of pointers; old size: 4*WSIZE; one pointer: plus DSIZE
+//reserves space between heap header (0,0) and prologue (8,1) for the pointers to lists
+//TODO: change dsize to size of pointer
+    if ((heap_listp = mem_sbrk(4 * WSIZE+SIZE_OF_SEG_STORAGE)) == (void *) -1)
         return -1;
-    PUT(heap_listp, 0);                          /* Alignment padding */    //HYNES: 0   ???
-    PUT(heap_listp + (1 * WSIZE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
-    PUT(heap_listp + (2 * WSIZE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
-    PUT(heap_listp + (3 * WSIZE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
-    heap_listp += (2 * WSIZE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
+    PUT(heap_listp, 0);/* Alignment padding */    //HYNES: 0   ???
+    seg_list_head = heap_listp + (1 * WSIZE);
+    //TODO: null the memory space reserved for pointers (for(i = 0; i<=offset, i++) get_list = null
+    PUT(heap_listp + (1 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
+    PUT(heap_listp + (2 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
+    PUT(heap_listp + (3 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
+    heap_listp += (2 * WSIZE+SIZE_OF_SEG_STORAGE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
 
@@ -195,8 +208,8 @@ int mm_init(void) {
 
 void *mm_malloc(size_t size) {
 
-    printf("Allocating block of size: %zu bytes\n", size);
-    checkheap(1);
+    //printf("Allocating block of size: %zu bytes\n", size);
+    //checkheap(1);
 
     size_t asize;      /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
@@ -237,8 +250,8 @@ void *mm_malloc(size_t size) {
 // mm_free - Free a block
 
 void mm_free(void *bp) {
-    printf("Freeing block: ");
-    printblock(bp);
+   // printf("Freeing block: ");
+   // printblock(bp);
     if (bp == 0)
         return;
 
@@ -252,51 +265,72 @@ void mm_free(void *bp) {
     coalesce(bp);
 }
 
+static void print_segmented(){
+    //TODO: to test implementation, add a get_list call for locations to see what is found there
+    printf("\nseg_list_head:\t\t\t%p\n", seg_list_head);
+    printf("check (expected: ???):\t%zu\n", (size_t) *seg_list_head);
+    printf("one word above seg_list_head (expected: 0): %d\n", *(unsigned int *)(((char *)seg_list_head)-WSIZE));
+    printf("SIZE_OF_SEG_STORAGE:\t%zu\n", SIZE_OF_SEG_STORAGE);
+    printf("heap_listp:\t\t\t\t%p\n", (void *)heap_listp);
+    printf("check (expected: 9):\t%d\n\n", *heap_listp);
+
+
+    int i = 0;
+    for(i = 0; i<=number_of_lists; i++){
+        printf("seg_list_head with offset %d: %p\n",i, GO_LIST(i));
+        printf("\t\tvalue found at %d: %p\n",i, GET_LIST(i));
+
+    }
+
+    printf("\n");
+}
 
 static void remove_block_from_list(unsigned long *bp) {
-    printf("\nBeginning of remove_block: %p\n", bp);
-    check_free_list();
+    print_segmented();
+
+    int num = which_list(bp);
+    //printf("\nBeginning of remove_block: %p\n", bp);
+    // check_free_list();
 
     //update previous block in list
     if (GET_PREVIOUS(bp) != NULL)
         PUT_POINTER((GET_PREVIOUS(bp)), GET_NEXT(bp));
     else
-        free_list_head = GET_NEXT(bp);
+        GET_LIST(num) = (typeof(GET_LIST(num)))GET_NEXT(bp);
 
     //update next block in list
     if (GET_NEXT(bp) != NULL)
         PUT_POINTER(GO_PREVIOUS(GET_NEXT(bp)), GET_PREVIOUS(bp));
 
-    check_free_list();
-    printf("End of remove_block: %p\n\n", bp);
+    //check_free_list();
+    //printf("End of remove_block: %p\n\n", bp);
 }
 
+static void add_to_free_list(unsigned long **bp) {
 
-static void add_to_free_list(unsigned long **free_block_pointer) {
 
-    printf("\nBeginning of add_to_free_list()\n");
-    check_free_list();
+    int num = which_list((void *)bp);
+    //printf("\nBeginning of add_to_free_list: %p\n", bp);
+    //check_free_list();
 
     //set the previous pointer of our free block to null
-    //plus 1 bc: its type long, it therefore moves it on incrementation by sizeof(long) bytes
-    PUT_POINTER(GO_PREVIOUS(free_block_pointer), NULL);
+    PUT_POINTER(GO_PREVIOUS(bp), NULL);
 
     //set next pointer of new free block to current head of free list;
-    if (free_list_head != NULL) {
-        PUT_POINTER(GO_NEXT(free_block_pointer), free_list_head);
+    if (GET_LIST(num) != NULL) {
+        PUT_POINTER(GO_NEXT(bp), GET_LIST(num));
 
         //sets the
-        PUT_POINTER(GO_PREVIOUS(free_list_head), free_block_pointer);
+        PUT_POINTER(GO_PREVIOUS(GET_LIST(num)), bp);
     } else {
-        PUT_POINTER(GO_NEXT(free_block_pointer), NULL);
+        PUT_POINTER(GO_NEXT(bp), NULL);
     }
 
     //set head of free list to new free block;
-    free_list_head = free_block_pointer;
+    GET_LIST(num) = bp;
 
-   check_free_list();
-   printf("End of add_to_free_list()\n");
-
+    //check_free_list();
+    //printf("End of add_to_free_list: %p\n\n", bp);
 }
 
 // coalesce - Boundary tag coalescing. Return ptr to coalesced block
@@ -348,9 +382,7 @@ static void *coalesce(void *bp) {
 
 
 
-
 // The remaining routines are internal helper routines
-
 
 // extend_heap - Extend heap with free block and return its block pointer
 
@@ -385,7 +417,6 @@ static void place(void *bp, size_t asize) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
         //HERE THE SHIT ENDS
-        check_free_list();
         if(GET_ALLOC(NEXT_BLKP(bp))){
             printf("HERE");
         }
@@ -397,12 +428,21 @@ static void place(void *bp, size_t asize) {
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
     }
-
-
 }
 
 
 // find_fit - Find a fit for a block with asize bytes
+
+static int which_list(void* bp){
+
+    //extract the size of the block pointer
+
+    //figure out which segmented list it goes into
+
+    //return that list #
+
+    return 0;
+}
 
 static void *find_fit(size_t asize) {
     /* First fit search */
@@ -418,14 +458,12 @@ static void *find_fit(size_t asize) {
 
 }
 
-//TODO Write a new find_fit_explicit function that works with our free list
-//TODO call in malloc
 
 static void *find_fit_explicit(size_t asize) {
 
     // first fit explicit list
     unsigned long **bp = free_list_head;
-    for (bp = free_list_head; GO_NEXT(bp) != NULL; bp = GET_NEXT(bp)) {
+    for (bp = free_list_head; GO_NEXT(bp) != NULL; bp = (typeof(bp))GET_NEXT(bp)) {
         if ((asize <= GET_SIZE(HDRP(bp)))) {
             // error statement when block is taken
 
@@ -434,6 +472,15 @@ static void *find_fit_explicit(size_t asize) {
     }
     return NULL;
 }
+
+
+
+
+
+
+
+
+//print functions
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
