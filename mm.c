@@ -41,6 +41,7 @@ group_t group = {
 /* Basic constants and macros */
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
+//TODO move chunsize up to get faster
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
 #define MIN_SIZE    (3*DSIZE) //3 bc one for head/foot, one for 8byte next pointer, one for same size previous pointer
@@ -109,9 +110,12 @@ static unsigned long **free_list_head = NULL; /* pointer to the beginning of exp
 static void **seg_list_head = NULL;
 
 //JASPER: NEW: number of lists located ON HEAP, set up in mm_init
-static int number_of_lists = 1;
+static int number_of_lists = 2;
 
 /* Function prototypes for internal helper routines */
+
+static int which_list_asize(int size);
+
 static void *extend_heap(size_t words);
 
 static void place(void *bp, size_t asize);
@@ -130,11 +134,11 @@ static void remove_block_from_list(unsigned long *bp);
 
 static void check_free_list();
 
+static void check_segmented();
+
 static void *find_fit_segmented(size_t asize);
 
-static int which_list(void* bp);
-
-static int which_list_asize(int size);
+static int which_list(void *bp);
 
 // mm_init - Initialize the memory manager
 
@@ -156,25 +160,27 @@ int mm_init(void) {
 
 //adjust for umber of pointers; old size: 4*WSIZE; one pointer: plus DSIZE
 //reserves space between heap header (0,0) and prologue (8,1) for the pointers to lists
-    if ((heap_listp = mem_sbrk(4 * WSIZE+SIZE_OF_SEG_STORAGE)) == (void *) -1)
+    if ((heap_listp = mem_sbrk(4 * WSIZE + SIZE_OF_SEG_STORAGE)) == (void *) -1)
         return -1;
     PUT(heap_listp, 0);/* Alignment padding */    //HYNES: 0   ???
     seg_list_head = heap_listp + (1 * WSIZE);
     //TODO: null the memory space reserved for pointers
-    for(int i = 0; i<number_of_lists; i++){
-        printf("GET CALLED THE FIRST TIME");
-        GET_LIST(i)=NULL;
+    int i = 0;
+    for (i = 0; i < number_of_lists; i++) {
+        GET_LIST(i) = NULL;
     }
-    PUT(heap_listp + (1 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
-    PUT(heap_listp + (2 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
-    PUT(heap_listp + (3 * WSIZE+SIZE_OF_SEG_STORAGE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
-    heap_listp += (2 * WSIZE+SIZE_OF_SEG_STORAGE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
+
+
+    PUT(heap_listp + (1 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue header */      //HYNES: 1001
+    PUT(heap_listp + (2 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(DSIZE, 1)); /* Prologue footer */      //HYNES: 1001
+    PUT(heap_listp + (3 * WSIZE + SIZE_OF_SEG_STORAGE), PACK(0, 1));     /* Epilogue header */      //HYNES: 0001
+    heap_listp += (2 * WSIZE + SIZE_OF_SEG_STORAGE); //HYNES: create a buffer zone of 2 WORDS (8 bytes)???
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
 
 
-
-    if (extend_heap(CHUNKSIZE / WSIZE) == NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
+    if (extend_heap(CHUNKSIZE / WSIZE) ==
+        NULL) //HYNES:  If it does not extend by an even number of words, it will return NULL.
         return -1;
     return 0; // HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
 
@@ -255,8 +261,8 @@ void *mm_malloc(size_t size) {
 // mm_free - Free a block
 
 void mm_free(void *bp) {
-   // printf("Freeing block: ");
-   // printblock(bp);
+    // printf("Freeing block: ");
+    // printblock(bp);
     if (bp == 0)
         return;
 
@@ -270,28 +276,8 @@ void mm_free(void *bp) {
     coalesce(bp);
 }
 
-static void print_segmented(){
-    //TODO: to test implementation, add a get_list call for locations to see what is found there
-    printf("\nseg_list_head:\t\t\t%p\n", seg_list_head);
-    printf("check (expected: ???):\t%zu\n", (size_t) *seg_list_head);
-    printf("one word above seg_list_head (expected: 0): %d\n", *(unsigned int *)(((char *)seg_list_head)-WSIZE));
-    printf("SIZE_OF_SEG_STORAGE:\t%zu\n", SIZE_OF_SEG_STORAGE);
-    printf("heap_listp:\t\t\t\t%p\n", (void *)heap_listp);
-    printf("check (expected: 9):\t%d\n\n", *heap_listp);
-
-
-    int i = 0;
-    for(i = 0; i<=number_of_lists; i++){
-        printf("seg_list_head with offset %d: %p\n",i, GO_LIST(i));
-        printf("\t\tvalue found at %d: %p\n",i, GET_LIST(i));
-
-    }
-
-    printf("\n");
-}
-
 static void remove_block_from_list(unsigned long *bp) {
-    print_segmented();
+    //check_segmented();
 
     int num = which_list(bp);
     //printf("\nBeginning of remove_block: %p\n", bp);
@@ -301,7 +287,7 @@ static void remove_block_from_list(unsigned long *bp) {
     if (GET_PREVIOUS(bp) != NULL)
         PUT_POINTER((GET_PREVIOUS(bp)), GET_NEXT(bp));
     else
-        GET_LIST(num) = (typeof(GET_LIST(num)))GET_NEXT(bp);
+        GET_LIST(num) = (typeof(GET_LIST(num))) GET_NEXT(bp);
 
     //update next block in list
     if (GET_NEXT(bp) != NULL)
@@ -313,8 +299,7 @@ static void remove_block_from_list(unsigned long *bp) {
 
 static void add_to_free_list(unsigned long **bp) {
 
-
-    int num = which_list((void *)bp);
+    int num = which_list((void *) bp);
     //printf("\nBeginning of add_to_free_list: %p\n", bp);
     //check_free_list();
 
@@ -422,13 +407,10 @@ static void place(void *bp, size_t asize) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
         //HERE THE SHIT ENDS
-        if(GET_ALLOC(NEXT_BLKP(bp))){
-            printf("HERE");
-        }
         bp = NEXT_BLKP(bp);
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
-        add_to_free_list((unsigned long **)bp);                    // Jasper, Hynes
+        add_to_free_list((unsigned long **) bp);                    // Jasper, Hynes
     } else {
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
@@ -438,23 +420,16 @@ static void place(void *bp, size_t asize) {
 
 // find_fit - Find a fit for a block with asize bytes
 
-static int which_list(void* bp){
-
-    //extract the size of the block pointer
-
-    //call which list asze to figure out list number
-
-    return 0;
+static int which_list(void *bp) {
+    return which_list_asize(GET_SIZE(HDRP(bp)));
 }
 
-
-static int which_list_asize(int size){
-
-    //figure out which segmented list it goes into
-
-    //return that list #
-
-    return 0;
+static int which_list_asize(int size) {
+    int num = 0;
+    if (size > 20000) {
+        num = 1;
+    }
+    return num;
 }
 
 static void *find_fit(size_t asize) {
@@ -473,15 +448,17 @@ static void *find_fit(size_t asize) {
 
 
 static void *find_fit_segmented(size_t asize) {
-
     int num = which_list_asize(asize);
-    // first fit explicit list
-    unsigned long **bp = GET_LIST(num);
-    for (bp; GO_NEXT(bp) != NULL; bp = (typeof(bp))GET_NEXT(bp)) {
-        if ((asize <= GET_SIZE(HDRP(bp)))) {
-            // error statement when block is taken
+    // first fit seg list
+    unsigned long **bp = NULL;
+    for(num;num<number_of_lists;num++) {
+        bp = GET_LIST(num);
+        for (bp; GO_NEXT(bp) != NULL; bp = (typeof(bp)) GET_NEXT(bp)) {
+            if ((asize <= GET_SIZE(HDRP(bp)))) {
+                // error statement when block is taken
 
-            return bp;
+                return bp;
+            }
         }
     }
     return NULL;
@@ -492,9 +469,27 @@ static void *find_fit_segmented(size_t asize) {
 
 
 
-
-
 //print functions
+
+static void check_segmented() {
+    //TODO: to test implementation, add a get_list call for locations to see what is found there
+    printf("\n\nseg_list_head:\t\t\t%p\n", seg_list_head);
+    printf("check (expected: ???):\t%zu\n", (size_t) *seg_list_head);
+    printf("one word above seg_list_head (expected: 0): %d\n", *(unsigned int *) (((char *) seg_list_head) - WSIZE));
+    printf("SIZE_OF_SEG_STORAGE:\t%zu\n", SIZE_OF_SEG_STORAGE);
+    printf("heap_listp:\t\t\t\t%p\n", (void *) heap_listp);
+    printf("check (expected: 9):\t%d\n\n", *heap_listp);
+
+
+    int i = 0;
+    for (i = 0; i < number_of_lists; i++) {
+        printf("seg_list_head with offset %d: %p\n", i, GO_LIST(i));
+        printf("\t\tvalue found at %d: %p\n", i, GET_LIST(i));
+
+    }
+
+    printf("\n");
+}
 
 static void printblock(void *bp) {
     size_t hsize, halloc, fsize, falloc;
@@ -623,7 +618,6 @@ static void check_free_list() {
         } else {
             printf("Header matches footer: \tTrue.\n");
         }
-
 
 
         if (GET_NEXT(fp) == NULL) {
