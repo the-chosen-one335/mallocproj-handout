@@ -14,10 +14,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="be350a92-6d8b-45ea-9326-ab22805cc39a" name="Default Changelist" comment="seg v2">
+    <list default="true" id="be350a92-6d8b-45ea-9326-ab22805cc39a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mm.c" beforeDir="false" afterPath="$PROJECT_DIR$/mm.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/traces/short1-bal.rep" beforeDir="false" afterPath="$PROJECT_DIR$/traces/short1-bal.rep" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -69,7 +68,7 @@
           <entry key="cmake" value="3" />
           <entry key="gitattributes" value="1" />
           <entry key="h" value="7" />
-          <entry key="rep" value="6" />
+          <entry key="rep" value="7" />
           <entry key="txt" value="4" />
           <entry key="xml" value="1" />
         </counts>
@@ -78,25 +77,25 @@
         <counts>
           <entry key="CMakeLists.txt" value="6" />
           <entry key="ObjectiveC" value="18" />
-          <entry key="PLAIN_TEXT" value="13" />
+          <entry key="PLAIN_TEXT" value="14" />
           <entry key="XML" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="c" value="7307" />
+          <entry key="c" value="7540" />
           <entry key="cmake" value="6" />
           <entry key="h" value="32" />
           <entry key="m" value="249" />
           <entry key="rep" value="12" />
-          <entry key="txt" value="693" />
+          <entry key="txt" value="741" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CMakeLists.txt" value="11" />
-          <entry key="ObjectiveC" value="7588" />
-          <entry key="PLAIN_TEXT" value="700" />
+          <entry key="ObjectiveC" value="7821" />
+          <entry key="PLAIN_TEXT" value="748" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.lifecycle.project">
@@ -121,8 +120,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mm.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="218">
-              <caret line="450" column="4" selection-start-line="450" selection-start-column="4" selection-end-line="450" selection-end-column="4" />
+            <state relative-caret-position="261">
+              <caret line="43" column="27" selection-start-line="43" selection-start-column="27" selection-end-line="43" selection-end-column="27" />
               <folding>
                 <element signature="e#0#403#0" />
                 <element signature="e#500#733#0" />
@@ -131,6 +130,15 @@
                 <element signature="e#6713#7965#0" />
                 <element signature="e#8039#9163#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/traces/random-bal.rep">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-543">
+              <caret line="83" column="10" selection-start-line="83" selection-start-column="5" selection-end-line="83" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -148,9 +156,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>get_ne</find>
-      <find>get_previous</find>
-      <find>min</find>
       <find>put_point</find>
       <find>get_next</find>
       <find>find_</find>
@@ -178,12 +183,17 @@
       <find>print_segmented</find>
       <find>check_</find>
       <find>check_segmented</find>
+      <find>which</find>
+      <find>x</find>
+      <find>segmented</find>
     </findStrings>
     <replaceStrings>
       <replace>bp</replace>
       <replace>SIZE_OF_SEG_STORAGE</replace>
       <replace>find_fit_segmented</replace>
       <replace>check_segmented</replace>
+      <replace>size</replace>
+      <replace>segregated</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -228,6 +238,11 @@
               <item name="mallocproj_handout" type="b2602c69:ProjectViewProjectNode" />
               <item name="mallocproj-handout" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="mallocproj_handout" type="b2602c69:ProjectViewProjectNode" />
+              <item name="mallocproj-handout" type="462c0819:PsiDirectoryNode" />
+              <item name="traces" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -271,7 +286,7 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="mallocproj_handout" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-V -l  traces/short1-bal.rep" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="mallocproj_handout" TARGET_NAME="mallocproj_handout" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="mallocproj_handout" RUN_TARGET_NAME="mallocproj_handout">
+    <configuration name="mallocproj_handout" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-V -l traces/short1-bal.rep" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="mallocproj_handout" TARGET_NAME="mallocproj_handout" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="mallocproj_handout" RUN_TARGET_NAME="mallocproj_handout">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -305,7 +320,7 @@
       <workItem from="1543751485276" duration="6633000" />
       <workItem from="1543767590368" duration="29342000" />
       <workItem from="1543907012008" duration="22242000" />
-      <workItem from="1543981499664" duration="15759000" />
+      <workItem from="1543981499664" duration="18286000" />
     </task>
     <task id="LOCAL-00001" summary="only added cmake version in order for error message to disappear">
       <created>1542539186216</created>
@@ -447,12 +462,26 @@
       <option name="project" value="LOCAL" />
       <updated>1543993135050</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="seg v3 (actually seg)">
+      <created>1543998125525</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1543998125525</updated>
+    </task>
+    <task id="LOCAL-00022" summary="the 90/100 with bitshift ZOOOOM">
+      <created>1543999873803</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1543999873803</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <option name="searchClosedTasks" value="true" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="100019000" />
+    <option name="totallyTimeSpent" value="102546000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -465,13 +494,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49122807" visible="true" weight="0.15024233" />
       <window_info id="Structure" order="1" sideWeight="0.50877196" side_tool="true" weight="0.15024233" />
       <window_info id="Favorites" order="2" sideWeight="0.50093806" side_tool="true" weight="0.16720517" />
       <window_info anchor="bottom" id="Inspection Results" weight="0.32876712" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.30958903" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3068493" />
       <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49596122" visible="true" weight="0.28767124" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49919224" weight="0.40273973" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -562,14 +592,16 @@
     <MESSAGE value="testin the NEX EXPLICIT LIST WOOHOOO" />
     <MESSAGE value="segmented list v1" />
     <MESSAGE value="seg v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="seg v2" />
+    <MESSAGE value="seg v3 (actually seg)" />
+    <MESSAGE value="the 90/100 with bitshift ZOOOOM" />
+    <option name="LAST_COMMIT_MESSAGE" value="the 90/100 with bitshift ZOOOOM" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mm.c</url>
-          <line>178</line>
+          <line>176</line>
           <option name="timeStamp" value="75" />
         </line-breakpoint>
       </breakpoints>
@@ -748,10 +780,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/traces/random-bal.rep">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-543">
+          <caret line="83" column="10" selection-start-line="83" selection-start-column="5" selection-end-line="83" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/mm.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="218">
-          <caret line="450" column="4" selection-start-line="450" selection-start-column="4" selection-end-line="450" selection-end-column="4" />
+        <state relative-caret-position="261">
+          <caret line="43" column="27" selection-start-line="43" selection-start-column="27" selection-end-line="43" selection-end-column="27" />
           <folding>
             <element signature="e#0#403#0" />
             <element signature="e#500#733#0" />

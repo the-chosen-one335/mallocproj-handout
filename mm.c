@@ -42,7 +42,7 @@ group_t group = {
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
 //TODO move chunsize up to get faster
-#define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
+#define CHUNKSIZE  (1<<8)  /* Extend heap by this amount (bytes) */
 #define POINTERSIZE       sizeof(void *)
 #define MIN_SIZE    (3*DSIZE) //3 bc one for head/foot, one for 8byte next pointer, one for same size previous pointer
 #define SIZE_OF_SEG_STORAGE   (number_of_lists*POINTERSIZE)
@@ -564,8 +564,6 @@ void checkheap(int verbose) {
 //    printf("This is the address of the last byte of the heap: %p\n", mem_heap_hi());
 //    printf("This is the value of the last byte of the heap: %d", *((int*)(mem_heap_hi()-3))); //Typecast the mem_heap_lo into an integer pointer (int*), then add 1 int* to that memory address and dereference it
 //    printf(" - (Expected: 1)\n\n");
-
-    //TODO Check if all free list pointers point between mem_heap_lo() and mem_heap_high()
 
     //Check each blocks header and footer:
     //Size -- Already implicitly implemented in static void checkblock(void *bp)
