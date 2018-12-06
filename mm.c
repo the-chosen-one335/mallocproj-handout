@@ -33,9 +33,9 @@ group_t group = {
         /* Third member's email address (leave blank if none) */
         "ckwanzek2-c@my.cityu.edu.hk"
         /* Fourth member's full name (leave blank if none) */
-        "",
+        "Frederic Calsius",
         /* Fourth member's email address (leave blank if none) */
-        ""
+        "fcalsius2-c@my.cityu.edu.hk"
 };
 
 /* Basic constants and macros */
