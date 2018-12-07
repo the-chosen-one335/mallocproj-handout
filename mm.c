@@ -42,24 +42,24 @@ group_t group = {
 #define WSIZE       4       /* Word and header/footer size (bytes) */
 #define DSIZE       8       /* Doubleword size (bytes) */
 
-// move chonksize up to get faster: 1<<8 or 1<<9 yields optimal result on server
+// move chonksize up to get faster: 1<<8 or 1<<9 yields optimal result on server, we chose 1<<9 because it works a bit faster
 #define CHONKSIZE             (1<<9)                            /* Extend heap by this amount (bytes) */
 #define POINTERSIZE           sizeof(void *)                    //size of one pointer
 #define MIN_SIZE              (DSIZE+2*POINTERSIZE)             // one DWORD for header/footer, one for 8byte next pointer, one for same size previous pointer
 #define SIZE_OF_SEG_STORAGE   (number_of_lists*POINTERSIZE)     //total number of bytes used to store our lists in beginning of heap
 
-#define MAX(x, y) ((x) > (y)? (x) : (y))                        //HYNES: If x > y THEN x, IF NOT, then y.
+#define MAX(x, y) ((x) > (y)? (x) : (y))                        //Group 79: If x > y THEN x, IF NOT, then y.
 
 /* Pack a size and allocated bit into a word */
-#define PACK(size, alloc)  ((size) | (alloc))                   //HYNES: | is the bitwise OR
+#define PACK(size, alloc)  ((size) | (alloc))                   //Group 79: | is the bitwise OR
 
 /* Read and write a word at address p */
-/* HYNES: GET(p) first casts p into a unsigned integer pointer
+/* Group 79: GET(p) first casts p into a unsigned integer pointer
  * (which means the value of p is an address that points to an unsigned int - 4 bytes)
  * and then it uses the * Dereferencing Operator to go to the address stored in p and access it. */
 #define GET(p)       (*(unsigned int *)(p))
 
-// JASPER: added for the implementation of the list structure used in explicit list / segregated explicit list
+// Group 79: added for the implementation of the list structure used in explicit list / segregated explicit list
 #define GO_NEXT(bp) ((unsigned long **)(bp))                    //move to memory location where address is stored to next/previous list element
 #define GO_PREVIOUS(bp) ((((unsigned long **)(bp))+1))
 
@@ -75,7 +75,7 @@ group_t group = {
 #define PUT(p, val)  (*(unsigned int *)(p) = (val))
 
 /* Read the size and allocated fields from address p */
-/* HYNES: ~ is the bitwise COMPLIMENT (Negation)
+/* Group 79: ~ is the bitwise COMPLIMENT (Negation)
  * WHATEVER IS AT P:                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (32 bits)
  *                                & 11111111111111111111111111111000 (32 bits)
                                 ----------------------------------------------
@@ -83,7 +83,7 @@ group_t group = {
  */
 #define GET_SIZE(p)  (GET(p) & ~0x7)
 
-/* HYNES:
+/* Group 79:
  * WHATEVER IS AT P:                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (32 bits)
  *                                & 00000000000000000000000000000001 (32 bits)
                                 ----------------------------------------------
@@ -92,7 +92,7 @@ group_t group = {
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
-/* Jasper: char pointer used because a char size is one byte, so adding one to the pointer moves it to next byte in memory,
+/* Group 79: char pointer used because a char size is one byte, so adding one to the pointer moves it to next byte in memory,
  * whereas adding one to an int pointer would move it 4 bytes on since an int's size is 4 bytes */
 #define HDRP(bp)       ((char *)(bp) - WSIZE)
 #define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
@@ -104,7 +104,7 @@ group_t group = {
 /* Global variables */
 static char *heap_listp = 0;                        /* Pointer to first block */
 static void **seg_list_head = NULL;                 // pointer to location in memory where the heads of the lists are stored, other lists stored directly below
-static int number_of_lists = 12;                    // total number of lists located on HEAP
+static int number_of_lists = 19;                    // total number of lists located on HEAP
 
 /* Function prototypes for internal helper routines */
 
@@ -134,11 +134,15 @@ static int which_list(void *bp);
 
 static int which_list_asize(int size);
 
+static int which_list_asize_alternative(int size);
+
+static int depth(int depth, int size);
+
 static void check_free_list();
 
 static void check_segregated();
 
-//HYNES: An interesting visual I quote from "https://www.cs.cmu.edu/~fp/courses/15213-s05/code/18-malloc/malloc.c" for better understanding
+//Group 79: An interesting visual I quote from "https://www.cs.cmu.edu/~fp/courses/15213-s05/code/18-malloc/malloc.c" for better understanding
 /*
  * Simple allocator based on implicit free lists with boundary
  * tag coalescing. Each block has header and footer of the form:
@@ -172,13 +176,13 @@ static void check_segregated();
 int mm_init(void) {
 
     /* Create the initial empty heap */
-    //HYNES: mem_sbrk returns pointer to the new block of memory in the extended heap
+    //Group 79: mem_sbrk returns pointer to the new block of memory in the extended heap
 
     //==============================
     //-------------PACK-------------
     //==============================
-    //Jasper: DSIZE = 8, 8 in binary is 1000
-    //Jasper: PACK(1000, 1) == (1000 | 0001) == 1001
+    //Group 79: DSIZE = 8, 8 in binary is 1000
+    //Group 79: PACK(1000, 1) == (1000 | 0001) == 1001
 
     //==============================
     //-------------PUT-------------
@@ -201,9 +205,9 @@ int mm_init(void) {
 
 
     /* Extend the empty heap with a free block of CHONKSIZE bytes */
-    if (extend_heap(CHONKSIZE / WSIZE) == NULL)                                 //HYNES:  If it does not extend by an even number of words, it will return NULL.
+    if (extend_heap(CHONKSIZE / WSIZE) == NULL)                                 //Group 79:  If it does not extend by an even number of words, it will return NULL.
         return -1;
-    return 0;                                                                   //HYNES: Returns 0 to main function if the heap was extended in an properly aligned manner
+    return 0;                                                                   //Group 79: Returns 0 to main function if the heap was extended in an properly aligned manner
 }
 
 /*
@@ -216,7 +220,7 @@ void *mm_malloc(size_t size) {
 
     size_t asize;               /* Adjusted block size */
     size_t extendsize;          /* Amount to extend heap if no fit */
-    char *bp;                   //HYNES: Block Pointer
+    char *bp;                   //Group 79: Block Pointer
 
     if (heap_listp == 0) {
         printf("Initializing the Heap...");
@@ -227,17 +231,17 @@ void *mm_malloc(size_t size) {
         return NULL;
 
     /* Adjust block size to include overhead and alignment reqs. */
-    if (size <= DSIZE)          //HYNES: size <= 8 bytes
-        asize = MIN_SIZE;       //HYNES: asize = 24 bytes
+    if (size <= DSIZE)          //Group 79: size <= 8 bytes
+        asize = MIN_SIZE;       //Group 79: asize = 24 bytes
     else
         asize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) /
-                         DSIZE); //HYNES: asize = adjusted size to satisfy alignment requirement
+                         DSIZE); //Group 79: asize = adjusted size to satisfy alignment requirement
 
     //used to optimize for the two binary tests: Zachary Hynes had email correspondence with WAN Hu about it
     if (size == 112)
-        asize = 128 + 8;
+        asize = 128 + DSIZE;
     if (size == 448)
-        asize = 512 + 8;
+        asize = 512 + DSIZE;
 
     /* Search the free list for a fit */
     if ((bp = find_fit_segregated(asize)) != NULL) {
@@ -351,7 +355,7 @@ static void *coalesce(void *bp) {
 
     //no coalescing; add new free block to the respective list
     if (prev_alloc && next_alloc) {              /* Case 1 */
-        add_to_free_list(bp);                   // Jasper, Hynes
+        add_to_free_list(bp);
         return bp;
 
     } else if (prev_alloc && !next_alloc) {      /* Case 2 */
@@ -384,30 +388,6 @@ static void *coalesce(void *bp) {
 //// Helper functions we added
 
 /*
- * which_list - helper function to calculate a free blocks designated list based on the size
- */
-static int which_list(void *bp) {
-    return which_list_asize(GET_SIZE(HDRP(bp)));
-}
-
-/*
- * which_list_asize - uses bit shifting in combination with a counter variable to calculate most significant bit of the size information, determining the list to put the block in/take a block from
- */
-static int which_list_asize(int size) {
-
-    size = size
-            >> 6;                               //all blocks that have no bit more significant than the sixth (representing size < 63) go into the first list (offset = 0;
-    int offset = 0;
-    while (size != 0) {                             //for every other significant bit, move on list further down
-        size = size >> 1;
-        offset++;
-    }
-    if (offset > number_of_lists - 1)               //catch possible overflow
-        offset = number_of_lists - 1;
-    return offset;
-}
-
-/*
  * find_fit_segregated - find a fitting block, starting in the list fitting the size we are looking for
  */
 static void *find_fit_segregated(size_t asize) {
@@ -427,6 +407,62 @@ static void *find_fit_segregated(size_t asize) {
         }
     }
     return NULL;                                                                    //no fit found in ANY list
+}
+
+/*
+ * which_list - helper function to calculate a free blocks designated list based on the size
+ */
+static int which_list(void *bp) {
+    return which_list_asize(GET_SIZE(HDRP(bp)));
+}
+
+/*
+ * which_list_asize - uses bit shifting in combination with a counter variable to calculate most significant bit of the size information, determining the list to put the block in/take a block from
+ * buckets are defined by the powers of 2: bucket zero < 64<= bucket one < 128<= bucket three <256 <=...
+ */
+static int which_list_asize(int size) {
+    size = size >> 6;                               //all blocks that have no bit more significant than the sixth (representing size < 63) go into the first list (offset = 0);
+    int offset = 0;
+    while (size != 0) {                             //for every other significant bit, move on list further down
+        size = size >> 1;
+        offset++;
+    }
+    if (offset > number_of_lists - 1)               //catch possible overflow
+        offset = number_of_lists - 1;
+    return offset;
+}
+
+
+/*
+ * ALTERNATIVE FUNCTIONS to find bucket introducing more sophisticated system of taking into account more than just one bit but a chosen number; not used because buckets of smaller range don't seem to increase util any further and it runs a bit slower than which_list_asize
+ */
+static int which_list_asize_alternative(int size) {
+    size = size >> 6;                               //all blocks that have no bit more significant than the sixth (representing size < 63) go into the first list (offset = 0;
+    int bucket = 0;
+    int dep =1;                                     //depth chosen, representing how many additional bits of the size should be taken into account whn choosing a list
+    int offset = depth(dep, size);
+   while(offset==-1){                               //while -1, size is still too big, meaning it still doesnt fit a list.
+       size=size>>1;
+       bucket = bucket + ((1<<dep));
+       offset = depth(dep, size);
+    }
+    bucket +=offset;
+    if (bucket > number_of_lists - 1)               //catch possible overflow
+        bucket = number_of_lists - 1;
+
+    return bucket;
+}
+
+/*
+ * helper function using a variable depth (representing a power of 2) to split over 2^depth buckets.
+ */
+static int depth(int depth, int size) {
+    depth = (1<<depth)-1;
+    for(int i = 0; i<=depth; i++){
+        if(size == i)
+            return i;
+    }
+    return -1;
 }
 
 
